@@ -94,20 +94,10 @@ class ElementFinder:
             self.logger.info(f"要素検索開始: depth={depth}, only_visible={only_visible}, "
                            f"max_items={max_items}")
             
-            # 要素を段階的に取得
+            # 要素を段階的に取得（アンカー自身も含む）
             elements = list(self._enumerate_elements(
                 anchor, depth, only_visible, max_items
             ))
-            
-            # 要素が見つからない場合、アンカー自身を含める
-            if not elements:
-                self.logger.debug("子要素が見つからないため、アンカー要素自身を含めます")
-                try:
-                    anchor_info = self._extract_element_info(anchor, 0, 0)
-                    if self._should_include_element(anchor_info, only_visible):
-                        elements.append(anchor_info)
-                except Exception as e:
-                    self.logger.debug(f"アンカー要素の情報取得失敗: {e}")
             
             duration = time.time() - start_time
             log_performance("要素検索", duration, len(elements))
@@ -144,30 +134,65 @@ class ElementFinder:
             ElementInfo: 要素情報
         """
         try:
-            # まずはdescendants()を使用して子孫要素を取得
+            yielded_count = 0
+            element_count = 0
+            
+            # 1. まずアンカー要素自身を最上位として出力
+            try:
+                anchor_info = self._extract_element_info(anchor, yielded_count, 0)  # depth=0 for top level
+                if self._should_include_element(anchor_info, only_visible):
+                    yield anchor_info
+                    yielded_count += 1
+                    
+                    # 最大件数チェック
+                    if max_items and yielded_count >= max_items:
+                        self.logger.debug(f"最大件数到達: {max_items}")
+                        return
+                        
+                self.logger.debug("アンカー要素自身を最上位レベルとして追加")
+            except Exception as e:
+                self.logger.debug(f"アンカー要素の情報取得失敗: {e}")
+            
+            # depth=0の場合はアンカー要素のみで終了
+            if depth is not None and depth <= 0:
+                self.logger.debug(f"depth={depth}のため、アンカー要素のみで終了")
+                return
+            
+            # 2. 子孫要素を取得
             descendants = []
             try:
                 if depth is None:
                     # 無制限の場合
                     descendants = list(anchor.descendants())
+                elif depth == 1:
+                    # depth=1の場合、直下の子要素のみを取得
+                    try:
+                        descendants = list(anchor.children())
+                        self.logger.debug(f"children()で{len(descendants)}件の直下子要素を取得")
+                    except Exception as e:
+                        self.logger.debug(f"children()取得失敗: {e}")
+                        descendants = []
                 else:
-                    # 深度制限
-                    descendants = list(anchor.descendants(depth=depth))
+                    # depth >= 2の場合、pywinautoのdescendantsを使用
+                    # ユーザー入力のdepth=2 -> pywinautoのdepth=1（孫要素まで）
+                    pywinauto_depth = depth - 1
+                    descendants = list(anchor.descendants(depth=pywinauto_depth))
+                    self.logger.debug(f"pywinauto descendants(depth={pywinauto_depth})で取得")
             except Exception as e:
                 self.logger.debug(f"descendants()取得失敗: {e}")
                 # 子孫要素が取得できない場合は空リストのまま
             
             self.logger.debug(f"descendants()で{len(descendants)}件の子孫要素を取得")
             
-            # 子孫要素がない場合は、アンカー自身と兄弟要素、親の子要素も検索
-            if not descendants:
+            # 子孫要素がない場合は、アンカー周辺の要素も検索（アンカー自身は除く）
+            if not descendants and depth is not None and depth > 0:
                 self.logger.debug("子孫要素がないため、アンカー周辺の要素を検索します")
-                descendants.extend(self._get_related_elements(anchor))
+                related_elements = self._get_related_elements(anchor)
+                # アンカー自身は既に追加済みなので除外
+                descendants = [elem for elem in related_elements if elem != anchor]
             
             # プログレス表示の準備（多数の要素が想定される場合）
             progress = None
-            element_count = 0
-            yielded_count = 0
             
             for element in descendants:
                 element_count += 1
@@ -180,10 +205,9 @@ class ElementFinder:
                     progress.update(100)
                 
                 try:
-                    # 要素情報の取得 - アンカーからの相対深度を計算
-                    element_info = self._extract_element_info(
-                        element, yielded_count, self._calculate_relative_depth(element, anchor)
-                    )
+                    # 要素情報の取得 - 簡易的な深度計算（高速化のため）
+                    relative_depth = self._calculate_fast_depth(element, yielded_count)
+                    element_info = self._extract_element_info(element, yielded_count, relative_depth)
                     
                     # フィルタリング
                     if self._should_include_element(element_info, only_visible):
@@ -203,7 +227,7 @@ class ElementFinder:
             if progress:
                 progress.complete()
             
-            self.logger.debug(f"要素列挙完了: 総数={element_count}, 出力={yielded_count}")
+            self.logger.debug(f"要素列挙完了: 総数={element_count + 1}, 出力={yielded_count}")
             
         except Exception as e:
             self.logger.error(f"要素列挙エラー: {e}")
@@ -272,6 +296,28 @@ class ElementFinder:
         
         self.logger.debug(f"関連要素取得完了: {len(unique_elements)}件（重複除去後）")
         return unique_elements
+    
+    def _calculate_fast_depth(self, element: HwndWrapper, index: int) -> int:
+        """
+        高速な深度計算（概算）
+        
+        Args:
+            element: 対象要素
+            index: 要素のインデックス
+        
+        Returns:
+            int: 推定深度
+        """
+        # インデックスベースの簡易深度計算
+        # 最初の数個は直下の子要素、後の要素はより深い可能性が高い
+        if index < 5:
+            return 1  # 直下の子要素
+        elif index < 20:
+            return 2  # 2階層目
+        elif index < 50:
+            return 3  # 3階層目
+        else:
+            return 4  # 4階層目以降
     
     def _extract_element_info(self, 
                              element: HwndWrapper, 
@@ -491,26 +537,47 @@ class ElementFinder:
             int: アンカーからの相対深度（1から開始）
         """
         try:
-            # 簡易的な深度計算：親の数を数える
+            # アンカーと要素が同じ場合は0
+            if element == anchor:
+                return 0
+            
+            # 要素から親をたどってアンカーまでの距離を計算
             depth = 0
             current = element
             
-            # 最大10階層まで（無限ループ防止）
-            for _ in range(10):
+            # 最大20階層まで（無限ループ防止）
+            for _ in range(20):
                 try:
                     parent = current.parent()
-                    if parent and parent != current:
-                        depth += 1
-                        current = parent
-                    else:
+                    if parent is None or parent == current:
                         break
-                except:
+                    
+                    depth += 1
+                    
+                    # アンカーに到達した場合
+                    if parent == anchor:
+                        return depth
+                    
+                    # アンカーとハンドルが同じかチェック
+                    try:
+                        if (hasattr(parent, 'handle') and hasattr(anchor, 'handle') and 
+                            parent.handle == anchor.handle):
+                            return depth
+                    except:
+                        pass
+                    
+                    current = parent
+                    
+                except Exception as e:
+                    self.logger.debug(f"親要素取得エラー: {e}")
                     break
             
-            # 適度な相対深度に調整（1-4程度）
-            return min(max(1, depth - 1), 4)
+            # アンカーに到達できなかった場合は、簡易的な深度を返す
+            # 1以上を返す（子要素であることを示す）
+            return max(1, min(depth, 10))
             
-        except:
+        except Exception as e:
+            self.logger.debug(f"相対深度計算エラー: {e}")
             return 1  # エラー時はデフォルト
     
     def _generate_element_path(self, element: HwndWrapper, depth: int) -> str:

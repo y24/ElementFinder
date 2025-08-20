@@ -86,7 +86,7 @@ class ElementFinderArgumentParser:
             '--depth',
             type=str,
             default='3',
-            help='取得する階層の深さ（1以上の整数 または "max", 既定: 3）'
+            help='取得する階層の深さ（0以上の整数 または "max", 既定: 3）'
         )
         
         parser.add_argument(

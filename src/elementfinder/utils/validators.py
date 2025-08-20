@@ -27,11 +27,11 @@ def validate_depth(depth_str: str) -> Union[int, None]:
     
     try:
         depth = int(depth_str)
-        if depth < 1:
-            raise InvalidArgumentError('depth', depth_str, '1以上の整数 または "max"')
+        if depth < 0:
+            raise InvalidArgumentError('depth', depth_str, '0以上の整数 または "max"')
         return depth
     except ValueError:
-        raise InvalidArgumentError('depth', depth_str, '1以上の整数 または "max"')
+        raise InvalidArgumentError('depth', depth_str, '0以上の整数 または "max"')
 
 
 def validate_fields(fields_str: str) -> List[str]:

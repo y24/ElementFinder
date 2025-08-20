@@ -277,21 +277,18 @@ class PywinautoStyleFormatter:
         Returns:
             str: インデント文字列
         """
-        if depth <= 1:
+        if depth <= 0:
             return ""
         
         # pywinauto風の階層表示:
-        # depth 1: "" (トップレベル)
-        # depth 2: "   | "
-        # depth 3: "   |    | "
-        # depth 4: "   |    |    | "
+        # depth 0: "" (ウィンドウレベル)
+        # depth 1: "   | "
+        # depth 2: "   |    | "
+        # depth 3: "   |    |    | "
         
         indent = ""
-        for level in range(2, depth + 1):
-            if level == 2:
-                indent += "   | "
-            else:
-                indent += "   | "
+        for level in range(1, depth + 1):
+            indent += "   | "
         
         return indent
 
