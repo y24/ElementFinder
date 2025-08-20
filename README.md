@@ -75,11 +75,11 @@ findui "アプリ" --anchor-title "詳細" --anchor-found-index 1
 ### カーソル機能
 
 ```powershell
-# カーソル位置の要素をアンカーにして取得
-findui "アプリ" --cursor
+# カーソル位置の要素をアンカーにして取得（ウィンドウタイトル不要）
+findui --cursor
 
 # カーソル取得までの遅延時間を指定
-findui "アプリ" --cursor --cursor-delay 3
+findui --cursor --cursor-delay 3
 ```
 
 ### 出力形式
@@ -128,7 +128,7 @@ findui "アプリ" --timeout 10
 
 ### 位置引数
 
-- `window_title` - ウィンドウタイトル（完全一致、--title-reで正規表現可）
+- `window_title` - ウィンドウタイトル（完全一致、--title-reで正規表現可、--cursor指定時は不要）
 
 ### 基本オプション
 

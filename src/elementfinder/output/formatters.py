@@ -153,6 +153,11 @@ class PywinautoStyleFormatter:
         
         # タイトル部分（シングルクォートで囲む）
         title = element.name or element.title or ""
+        # Unicode文字を安全に処理
+        try:
+            title = title.encode('utf-8', errors='replace').decode('utf-8')
+        except:
+            title = str(title).encode('utf-8', errors='replace').decode('utf-8')
         title_part = f"'{title}'"
         
         # 位置情報
@@ -177,11 +182,12 @@ class PywinautoStyleFormatter:
         
         # 基本的な識別子
         if element.name and element.name.strip():
-            ids.append(element.name.strip())
+            clean_name = self._safe_encode(element.name.strip())
+            ids.append(clean_name)
         
         # control_typeとnameの組み合わせ
         if element.name and element.control_type:
-            clean_name = element.name.strip()
+            clean_name = self._safe_encode(element.name.strip())
             ids.append(f"{clean_name}{element.control_type}")
         
         # control_type単体
@@ -190,7 +196,7 @@ class PywinautoStyleFormatter:
         
         # class_nameとnameの組み合わせ
         if element.name and element.class_name and element.class_name != element.control_type:
-            clean_name = element.name.strip()
+            clean_name = self._safe_encode(element.name.strip())
             ids.append(f"{clean_name}{element.class_name}")
         
         # class_name単体
@@ -199,7 +205,7 @@ class PywinautoStyleFormatter:
         
         # インデックス付きバリエーション
         if element.name:
-            clean_name = element.name.strip()
+            clean_name = self._safe_encode(element.name.strip())
             ids.append(f"{clean_name}{element.index}")
         
         if element.control_type:
@@ -234,9 +240,11 @@ class PywinautoStyleFormatter:
         
         # titleまたはname（空でない場合のみ）
         if element.name and element.name.strip():
-            conditions.append(f'title="{element.name.strip()}"')
+            safe_name = self._safe_encode(element.name.strip())
+            conditions.append(f'title="{safe_name}"')
         elif element.title and element.title.strip() and element.title != element.name:
-            conditions.append(f'title="{element.title.strip()}"')
+            safe_title = self._safe_encode(element.title.strip())
+            conditions.append(f'title="{safe_title}"')
         
         # auto_id（最も確実な識別子）
         auto_id_value = None
@@ -291,6 +299,21 @@ class PywinautoStyleFormatter:
             indent += "   | "
         
         return indent
+    
+    def _safe_encode(self, text: str) -> str:
+        """
+        Unicode文字を安全にエンコードします
+        
+        Args:
+            text: エンコード対象のテキスト
+        
+        Returns:
+            str: 安全にエンコードされたテキスト
+        """
+        try:
+            return text.encode('utf-8', errors='replace').decode('utf-8')
+        except:
+            return str(text).encode('utf-8', errors='replace').decode('utf-8')
 
 
 class PywinautoNativeFormatter:

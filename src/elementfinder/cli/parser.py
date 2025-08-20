@@ -41,8 +41,8 @@ class ElementFinderArgumentParser:
   # 設定ウィンドウのPane要素をアンカーに、3階層まで取得（UIA）
   findui "アプリ - 設定" --backend uia --anchor-control-type Pane --depth 3
   
-  # カーソル下の要素をアンカーに、全階層をJSON出力
-  findui "アプリ" --cursor --depth max --json
+  # カーソル下の要素をアンカーに、全階層をJSON出力（ウィンドウタイトル不要）
+  findui --cursor --depth max --json
   
   # 複数マッチ時の2番目を選択
   findui "アプリ" --anchor-title "詳細" --anchor-found-index 1
@@ -50,10 +50,11 @@ class ElementFinderArgumentParser:
             formatter_class=argparse.RawDescriptionHelpFormatter
         )
         
-        # 位置引数
+        # 位置引数（--cursor指定時はオプション）
         parser.add_argument(
             'window_title',
-            help='ウィンドウタイトル（完全一致、--title-reで正規表現可）'
+            nargs='?',  # オプション引数に変更
+            help='ウィンドウタイトル（完全一致、--title-reで正規表現可、--cursor指定時は不要）'
         )
         
         # オプション引数
@@ -268,12 +269,24 @@ class ElementFinderArgumentParser:
         """
         validated = {}
         
-        # ウィンドウタイトル
-        validated['window_title'] = validate_window_title(
-            args_dict['window_title'], 
-            args_dict['title_re']
-        )
-        validated['title_re'] = args_dict['title_re']
+        # ウィンドウタイトル（--cursor指定時は不要）
+        if args_dict['cursor'] and not args_dict['window_title']:
+            # --cursor指定時はwindow_titleが未指定でもOK
+            validated['window_title'] = None
+            validated['title_re'] = False
+        else:
+            # window_titleが必須の場合
+            if not args_dict['window_title']:
+                raise InvalidArgumentError(
+                    'window_title',
+                    'required when not using --cursor',
+                    '--cursorを指定しない場合はウィンドウタイトルが必須です'
+                )
+            validated['window_title'] = validate_window_title(
+                args_dict['window_title'], 
+                args_dict['title_re']
+            )
+            validated['title_re'] = args_dict['title_re']
         
         # バックエンド
         validated['backend'] = validate_backend(args_dict['backend'])

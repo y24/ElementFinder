@@ -92,15 +92,19 @@ class ElementFinderApp:
         Returns:
             int: 終了コード
         """
-        # 1. ウィンドウの特定
-        self.logger.info("ステップ1: ウィンドウ特定")
-        window_finder = create_window_finder(self.args['backend'])
-        
-        window = window_finder.find_window(
-            self.args['window_title'],
-            self.args['title_re'],
-            self.args['timeout']
-        )
+        # 1. ウィンドウの特定（--cursor指定時はスキップ）
+        if self.args['cursor']:
+            self.logger.info("ステップ1: ウィンドウ特定（--cursor指定のためスキップ）")
+            window = None
+        else:
+            self.logger.info("ステップ1: ウィンドウ特定")
+            window_finder = create_window_finder(self.args['backend'])
+            
+            window = window_finder.find_window(
+                self.args['window_title'],
+                self.args['title_re'],
+                self.args['timeout']
+            )
         
         # 2. アンカーの決定
         self.logger.info("ステップ2: アンカー決定")
@@ -127,7 +131,8 @@ class ElementFinderApp:
         self._output_results(elements)
         
         # 6. クリーンアップ
-        window_finder.close()
+        if not self.args['cursor']:
+            window_finder.close()
         
         self.logger.info(f"ElementFinder 完了: {len(elements)}件出力")
         return 0
@@ -137,7 +142,7 @@ class ElementFinderApp:
         アンカー要素を決定します
         
         Args:
-            window: 対象ウィンドウ
+            window: 対象ウィンドウ（--cursor指定時はNone）
         
         Returns:
             アンカー要素
@@ -262,7 +267,13 @@ class ElementFinderApp:
                 )
                 output = formatter.format_elements(elements)
             
-            print(output)
+            # Unicodeエラーを回避するため、エンコーディングエラーを無視して出力
+            try:
+                print(output)
+            except UnicodeEncodeError:
+                # エンコーディングエラーが発生した場合、問題のある文字を置換
+                safe_output = output.encode('utf-8', errors='replace').decode('utf-8')
+                print(safe_output)
             
         except Exception as e:
             self.logger.error(f"出力生成失敗: {e}")
@@ -297,6 +308,10 @@ class ElementFinderApp:
         Returns:
             pywinauto要素
         """
+        # --cursor指定時は直接アンカーを解決
+        if self.args['cursor']:
+            return self._resolve_anchor(None)
+        
         # ウィンドウの特定（メインロジックと同じ）
         window_finder = create_window_finder(self.args['backend'])
         
