@@ -67,14 +67,13 @@ class PywinautoStyleFormatter:
     pywinautoのprint_control_identifiers()風の出力フォーマッタ
     """
     
-    def __init__(self, emit_selector: bool = True, show_alternative_ids: bool = True, show_rectangle: bool = False):
+    def __init__(self, show_alternative_ids: bool = True, show_rectangle: bool = False):
         """
         Args:
-            emit_selector: child_windowセレクタを併記するか
             show_alternative_ids: 代替識別子リストを表示するか
             show_rectangle: 座標情報を表示するか
         """
-        self.emit_selector = emit_selector
+        self.emit_selector = True  # child_windowセレクタは常に表示
         self.show_alternative_ids = show_alternative_ids
         self.show_rectangle = show_rectangle
         self.logger = get_logger()

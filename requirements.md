@@ -19,7 +19,7 @@ GUIアプリの要素特定を効率化するCLI。
 
   * 既定: 人間が読みやすいツリー（print_control_identifiers 風に要約）
   * 機械可読: `--json` 指定時に JSON 配列（各要素の属性を列挙）
-  * 追加: `--emit-selector` で pywinauto の `child_window(...)` スニペットを併記
+  * 追加: pywinauto の `child_window(...)` スニペットを常に併記
 
 # 4. コマンド仕様
 
@@ -75,7 +75,7 @@ elementfinder <WINDOW_TITLE>
 ```
 
 * 行頭の `[index]` は当ツール内の並び番号（descendants 抽出順）。
-  `--emit-selector` 有効時は、各行の末尾に pywinauto セレクタ例を併記：
+  各行の末尾に pywinauto セレクタ例を併記：
 
 ```
 selector: child_window(auto_id="saveBtn", control_type="Button")
@@ -138,7 +138,7 @@ elementfinder "アプリ" --cursor --cursor-delay 5 --depth max --json --fields 
 elementfinder "アプリ" --anchor-control-type Group --anchor-title 詳細 --anchor-found-index 1 --depth 2
 
 # 4) セレクタ生成を同時表示
-elementfinder "アプリ" --backend uia --depth 2 --emit-selector
+elementfinder "アプリ" --backend uia --depth 2
 ```
 
 # 9. 非機能要件

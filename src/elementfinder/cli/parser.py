@@ -169,11 +169,7 @@ class ElementFinderArgumentParser:
             help='JSON出力時の出力フィールド（カンマ区切り）'
         )
         
-        output_group.add_argument(
-            '--emit-selector',
-            action='store_true',
-            help='pywinautoセレクタを併記'
-        )
+
         
 
         
@@ -328,7 +324,7 @@ class ElementFinderArgumentParser:
         else:
             validated['fields'] = None
         
-        validated['emit_selector'] = args_dict['emit_selector']
+
         validated['pywinauto_native'] = args_dict['pywinauto_native']
         
         if args_dict.get('max_items'):

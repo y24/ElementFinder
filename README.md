@@ -72,7 +72,7 @@ findui --cursor --cursor-delay 3
 ### アンカー指定
 
 ```powershell
-# タイトルでアンカーを指定
+# タイトルでアンカーを指定し、その子要素のみ取得
 findui "アプリ" --anchor-title "設定"
 
 # control_typeでアンカーを指定
