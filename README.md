@@ -49,27 +49,14 @@ pip install -e .
 ### 基本的な使用方法
 
 ```powershell
-# メモ帳の要素を3階層まで取得
+# タイトルを指定してウィンドウを検索
 findui "無題 - メモ帳"
 
 # 正規表現でウィンドウを検索
 findui ".*設定.*" --title-re
 
-# UI Automationバックエンドを使用
+# UIAバックエンドを使用（デフォルトはwin32）
 findui "アプリ名" --backend uia
-```
-
-### アンカー指定
-
-```powershell
-# control_typeでアンカーを指定
-findui "アプリ" --anchor-control-type Pane
-
-# タイトルでアンカーを指定
-findui "アプリ" --anchor-title "設定"
-
-# 複数マッチ時のインデックス指定
-findui "アプリ" --anchor-title "詳細" --anchor-found-index 1
 ```
 
 ### カーソル機能
@@ -82,6 +69,35 @@ findui --cursor
 findui --cursor --cursor-delay 3
 ```
 
+### アンカー指定
+
+```powershell
+# タイトルでアンカーを指定
+findui "アプリ" --anchor-title "設定"
+
+# control_typeでアンカーを指定
+findui "アプリ" --anchor-control-type Button
+
+# 複数マッチ時のインデックス指定
+findui "アプリ" --anchor-control-type Button --anchor-found-index 1
+```
+
+### フィルタリング・制限
+
+```powershell
+# 取得階層の深さを指定（デフォルト3）
+findui "アプリ" --depth 5
+
+# 全階層を取得
+findui "アプリ" --depth max
+
+# 最大出力件数を制限
+findui "アプリ" --max-items 50
+
+# 可視要素のみを出力
+findui "アプリ" --only-visible
+```
+
 ### 出力形式
 
 ```powershell
@@ -90,25 +106,6 @@ findui "アプリ" --json
 
 # 特定のフィールドのみをJSON出力
 findui "アプリ" --json --fields "name,control_type,rectangle"
-
-# pywinautoセレクタを併記
-findui "アプリ" --emit-selector
-```
-
-### フィルタリング・制限
-
-```powershell
-# 可視要素のみを出力
-findui "アプリ" --only-visible
-
-# 最大出力件数を制限
-findui "アプリ" --max-items 50
-
-# 取得階層の深さを指定
-findui "アプリ" --depth 5
-
-# 全階層を取得
-findui "アプリ" --depth max
 ```
 
 ### その他のオプション
@@ -155,7 +152,6 @@ findui "アプリ" --timeout 10
 
 - `--json` - JSON形式で出力
 - `--fields FIELDS` - JSON出力時の出力フィールド（カンマ区切り）
-- `--emit-selector` - pywinautoセレクタを併記
 - `--pywinauto-native` - pywinautoのprint_control_identifiers()を直接実行
 - `--max-items COUNT` - 最大出力件数
 - `--highlight` - 出力対象要素をハイライト表示
@@ -190,13 +186,7 @@ findui "設定" --anchor-control-type TabItem --anchor-title "詳細設定" --de
 findui "アプリケーション名" --cursor --cursor-delay 3 --highlight --verbose
 ```
 
-### 4. pywinautoスクリプト用のセレクタ生成
-
-```powershell
-findui "電卓" --anchor-title "結果" --emit-selector --max-items 10
-```
-
-### 5. 座標情報を表示して出力
+### 4. 座標情報を表示して出力
 
 ```powershell
 findui "アプリ" --show-rectangle
