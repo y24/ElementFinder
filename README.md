@@ -46,7 +46,7 @@ pip install .
 
 ```powershell
 # タイトルを指定してウィンドウを検索
-findui "無題 - メモ帳"
+findui "電卓"
 
 # 正規表現でウィンドウを検索
 findui ".*設定.*" --title-re
