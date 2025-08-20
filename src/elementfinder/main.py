@@ -248,22 +248,18 @@ class ElementFinderApp:
                 # JSON出力
                 formatter = create_formatter('json', fields=self.args['fields'])
                 output = formatter.format_elements(elements)
-            elif self.args['pywinauto_style']:
-                # pywinauto風出力
-                formatter = create_formatter(
-                    'pywinauto',
-                    emit_selector=self.args['emit_selector'],
-                    show_alternative_ids=True
-                )
-                output = formatter.format_elements(elements)
             elif self.args['pywinauto_native']:
                 # pywinauto native出力
                 formatter = create_formatter('pywinauto-native', depth=self.args['depth'])
                 # pywinauto nativeの場合、元のwindow要素を渡す必要がある
                 output = self._format_pywinauto_native(formatter, elements)
             else:
-                # テキスト出力
-                formatter = create_formatter('text', emit_selector=self.args['emit_selector'])
+                # デフォルト: pywinauto風出力
+                formatter = create_formatter(
+                    'pywinauto',
+                    emit_selector=True,  # child_windowセレクタは常に表示
+                    show_alternative_ids=True
+                )
                 output = formatter.format_elements(elements)
             
             print(output)

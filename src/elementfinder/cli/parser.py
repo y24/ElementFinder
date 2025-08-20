@@ -174,11 +174,7 @@ class ElementFinderArgumentParser:
             help='pywinautoセレクタを併記'
         )
         
-        output_group.add_argument(
-            '--pywinauto-style',
-            action='store_true',
-            help='pywinautoのprint_control_identifiers()風の出力形式を使用'
-        )
+
         
         output_group.add_argument(
             '--pywinauto-native',
@@ -314,7 +310,6 @@ class ElementFinderArgumentParser:
             validated['fields'] = None
         
         validated['emit_selector'] = args_dict['emit_selector']
-        validated['pywinauto_style'] = args_dict['pywinauto_style']
         validated['pywinauto_native'] = args_dict['pywinauto_native']
         
         if args_dict.get('max_items'):
@@ -332,7 +327,7 @@ class ElementFinderArgumentParser:
         
         # 相互排他的オプションのチェック
         exclusive_groups = [
-            ['json', 'pywinauto_style', 'pywinauto_native']  # 出力形式は一つだけ選択可能
+            ['json', 'pywinauto_native']  # 出力形式は一つだけ選択可能
         ]
         validate_mutually_exclusive_options(args_dict, exclusive_groups)
         

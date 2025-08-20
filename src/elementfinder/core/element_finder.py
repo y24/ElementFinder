@@ -296,7 +296,7 @@ class ElementFinder:
             # UIA固有の情報
             if self.backend == 'uia':
                 auto_id = self._safe_get_property(element, 'automation_id', None)
-                control_type = self._safe_get_property(element, 'control_type', None)
+                control_type = self._safe_get_property(element, 'control_type', None, is_method=True)
             else:
                 auto_id = None
                 control_type = None
