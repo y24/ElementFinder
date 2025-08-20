@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elementfinder"
+version = "0.1.0"
+description = "GUIアプリケーションの要素特定を効率化するCLIツール"
+readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "ElementFinder Development Team", email = "dev@elementfinder.local"}
+]
+maintainers = [
+    {name = "ElementFinder Development Team", email = "dev@elementfinder.local"}
+]
+keywords = ["gui", "automation", "windows", "pywinauto", "cli", "element", "finder"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "pywinauto>=0.6.8",
+    "comtypes>=1.1.14",
+    "pywin32>=306",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/elementfinder"
+Documentation = "https://github.com/your-org/elementfinder/wiki"
+Repository = "https://github.com/your-org/elementfinder"
+"Bug Reports" = "https://github.com/your-org/elementfinder/issues"
+
+[project.scripts]
+findui = "elementfinder.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
