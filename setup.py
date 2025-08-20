@@ -43,7 +43,7 @@ setup(
     # エントリーポイント
     entry_points={
         "console_scripts": [
-            "elementfinder=elementfinder.main:main",
+            "findui=elementfinder.main:main",
         ],
     },
     

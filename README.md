@@ -1,6 +1,6 @@
 # ElementFinder
 
-GUIアプリケーションの要素特定を効率化するCLIツール
+GUIアプリケーションの要素特定を効率化するCLIツール（コマンド名: findui）
 
 ## 概要
 
@@ -50,78 +50,78 @@ pip install -e .
 
 ```powershell
 # メモ帳の要素を3階層まで取得
-elementfinder "無題 - メモ帳"
+findui "無題 - メモ帳"
 
 # 正規表現でウィンドウを検索
-elementfinder ".*設定.*" --title-re
+findui ".*設定.*" --title-re
 
 # UI Automationバックエンドを使用
-elementfinder "アプリ名" --backend uia
+findui "アプリ名" --backend uia
 ```
 
 ### アンカー指定
 
 ```powershell
 # control_typeでアンカーを指定
-elementfinder "アプリ" --anchor-control-type Pane
+findui "アプリ" --anchor-control-type Pane
 
 # タイトルでアンカーを指定
-elementfinder "アプリ" --anchor-title "設定"
+findui "アプリ" --anchor-title "設定"
 
 # 複数マッチ時のインデックス指定
-elementfinder "アプリ" --anchor-title "詳細" --anchor-found-index 1
+findui "アプリ" --anchor-title "詳細" --anchor-found-index 1
 ```
 
 ### カーソル機能
 
 ```powershell
 # カーソル位置の要素をアンカーにして取得
-elementfinder "アプリ" --cursor
+findui "アプリ" --cursor
 
 # カーソル取得までの遅延時間を指定
-elementfinder "アプリ" --cursor --cursor-delay 3
+findui "アプリ" --cursor --cursor-delay 3
 ```
 
 ### 出力形式
 
 ```powershell
 # JSON形式で出力
-elementfinder "アプリ" --json
+findui "アプリ" --json
 
 # 特定のフィールドのみをJSON出力
-elementfinder "アプリ" --json --fields "name,control_type,rectangle"
+findui "アプリ" --json --fields "name,control_type,rectangle"
 
 # pywinautoセレクタを併記
-elementfinder "アプリ" --emit-selector
+findui "アプリ" --emit-selector
 ```
 
 ### フィルタリング・制限
 
 ```powershell
 # 可視要素のみを出力
-elementfinder "アプリ" --only-visible
+findui "アプリ" --only-visible
 
 # 最大出力件数を制限
-elementfinder "アプリ" --max-items 50
+findui "アプリ" --max-items 50
 
 # 取得階層の深さを指定
-elementfinder "アプリ" --depth 5
+findui "アプリ" --depth 5
 
 # 全階層を取得
-elementfinder "アプリ" --depth max
+findui "アプリ" --depth max
 ```
 
 ### その他のオプション
 
 ```powershell
 # 要素をハイライト表示
-elementfinder "アプリ" --highlight
+findui "アプリ" --highlight
 
 # 詳細ログを出力
-elementfinder "アプリ" --verbose
+findui "アプリ" --verbose
 
 # タイムアウト時間を指定
-elementfinder "アプリ" --timeout 10
+findui "アプリ" --timeout 10
 ```
 
 ## コマンドライン引数
@@ -174,25 +174,25 @@ elementfinder "アプリ" --timeout 10
 ### 1. メモ帳の要素構造を確認
 
 ```powershell
-elementfinder "タイトルなし - メモ帳" --depth 2 --only-visible
+findui "タイトルなし - メモ帳" --depth 2 --only-visible
 ```
 
 ### 2. 設定画面の特定要素を起点に詳細取得
 
 ```powershell
-elementfinder "設定" --anchor-control-type TabItem --anchor-title "詳細設定" --depth max --json
+findui "設定" --anchor-control-type TabItem --anchor-title "詳細設定" --depth max --json
 ```
 
 ### 3. カーソル位置から要素情報を取得
 
 ```powershell
-elementfinder "アプリケーション名" --cursor --cursor-delay 3 --highlight --verbose
+findui "アプリケーション名" --cursor --cursor-delay 3 --highlight --verbose
 ```
 
 ### 4. pywinautoスクリプト用のセレクタ生成
 
 ```powershell
-elementfinder "電卓" --anchor-title "結果" --emit-selector --max-items 10
+findui "電卓" --anchor-title "結果" --emit-selector --max-items 10
 ```
 
 ## 出力形式
@@ -255,7 +255,7 @@ pip install comtypes>=1.1.14
 Win32バックエンドを試してください：
 
 ```powershell
-elementfinder "アプリ名" --backend win32
+findui "アプリ名" --backend win32
 ```
 
 #### 4. 大量の要素で動作が重い
@@ -263,7 +263,7 @@ elementfinder "アプリ名" --backend win32
 出力を制限してください：
 
 ```powershell
-elementfinder "アプリ名" --depth 2 --max-items 100 --only-visible
+findui "アプリ名" --depth 2 --max-items 100 --only-visible
 ```
 
 ## 開発

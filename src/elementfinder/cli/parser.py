@@ -34,18 +34,18 @@ class ElementFinderArgumentParser:
             設定済みのArgumentParserインスタンス
         """
         parser = argparse.ArgumentParser(
-            prog='elementfinder',
+            prog='findui',
             description='GUIアプリケーションの要素特定を効率化するCLIツール',
             epilog='''
 使用例:
   # 設定ウィンドウのPane要素をアンカーに、3階層まで取得（UIA）
-  elementfinder "アプリ - 設定" --backend uia --anchor-control-type Pane --depth 3
+  findui "アプリ - 設定" --backend uia --anchor-control-type Pane --depth 3
   
   # カーソル下の要素をアンカーに、全階層をJSON出力
-  elementfinder "アプリ" --cursor --depth max --json
+  findui "アプリ" --cursor --depth max --json
   
   # 複数マッチ時の2番目を選択
-  elementfinder "アプリ" --anchor-title "詳細" --anchor-found-index 1
+  findui "アプリ" --anchor-title "詳細" --anchor-found-index 1
             ''',
             formatter_class=argparse.RawDescriptionHelpFormatter
         )
