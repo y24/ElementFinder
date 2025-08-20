@@ -247,16 +247,77 @@ class ElementFinderApp:
             if self.args['json']:
                 # JSON出力
                 formatter = create_formatter('json', fields=self.args['fields'])
+                output = formatter.format_elements(elements)
+            elif self.args['pywinauto_style']:
+                # pywinauto風出力
+                formatter = create_formatter(
+                    'pywinauto',
+                    emit_selector=self.args['emit_selector'],
+                    show_alternative_ids=True
+                )
+                output = formatter.format_elements(elements)
+            elif self.args['pywinauto_native']:
+                # pywinauto native出力
+                formatter = create_formatter('pywinauto-native', depth=self.args['depth'])
+                # pywinauto nativeの場合、元のwindow要素を渡す必要がある
+                output = self._format_pywinauto_native(formatter, elements)
             else:
                 # テキスト出力
                 formatter = create_formatter('text', emit_selector=self.args['emit_selector'])
+                output = formatter.format_elements(elements)
             
-            output = formatter.format_elements(elements)
             print(output)
             
         except Exception as e:
             self.logger.error(f"出力生成失敗: {e}")
             raise
+    
+    def _format_pywinauto_native(self, formatter, elements) -> str:
+        """
+        pywinauto nativeフォーマッタで出力を生成します
+        
+        Args:
+            formatter: PywinautoNativeFormatterインスタンス
+            elements: 要素リスト
+        
+        Returns:
+            str: フォーマット済み出力
+        """
+        try:
+            # アンカー要素を取得（ウィンドウまたはアンカー）
+            anchor = self._resolve_anchor_for_native()
+            
+            # pywinauto nativeフォーマッタで出力
+            return formatter.format_elements(elements, window_element=anchor)
+            
+        except Exception as e:
+            self.logger.error(f"pywinauto native出力失敗: {e}")
+            return f"エラー: pywinauto native出力の生成に失敗しました: {e}"
+    
+    def _resolve_anchor_for_native(self):
+        """
+        pywinauto native用のアンカー要素を解決します
+        
+        Returns:
+            pywinauto要素
+        """
+        # ウィンドウの特定（メインロジックと同じ）
+        window_finder = create_window_finder(self.args['backend'])
+        
+        try:
+            window = window_finder.find_window(
+                self.args['window_title'],
+                self.args['title_re'],
+                self.args['timeout']
+            )
+            
+            # アンカーの決定（メインロジックと同じ）
+            anchor = self._resolve_anchor(window)
+            
+            return anchor
+            
+        finally:
+            window_finder.close()
 
 
 def main() -> int:
