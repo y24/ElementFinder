@@ -38,7 +38,7 @@ elementfinder <WINDOW_TITLE>
   [--only-visible]                           # 非表示要素を除外
   [--max-items <N>]                           # 出力上限（既定: 無制限）
   [--json] [--fields <CSV>]                  # 出力項目を制御
-  [--highlight]                              # 出力対象を一瞬アウトライン描画
+
   [--timeout <SEC>]                           # ウィンドウ待機（既定 5）
   [--verbose]
   [--version]
@@ -61,7 +61,7 @@ elementfinder <WINDOW_TITLE>
 * `--only-visible`: 可視かつ有効な要素のみ出力。
 * `--json`: JSON 出力。
   既定は人間向けの簡易ツリー。`--fields` で出力列を制限（例: `--fields name,auto_id,control_type,rectangle`）。
-* `--highlight`: 出力対象（上位 N 件）を順にアウトライン描画して視認性を上げる。
+
 * `--timeout`: 対象ウィンドウの出現を待機。
 
 # 5. 出力仕様
@@ -110,7 +110,7 @@ selector: child_window(auto_id="saveBtn", control_type="Button")
    * それ以外: `dlg.child_window(**anchor_kwargs, found_index=...)`。未指定なら `dlg` 自身。
 3. **要素列挙**: `anchor.descendants(depth=N)`（`max` 時は制限なし）。
    `--only-visible` なら `is_visible() and is_enabled()` でフィルタ。
-4. **整形**: 指定 `--fields` に従い整形。`--highlight` 時は短時間 `draw_outline()`。
+4. **整形**: 指定 `--fields` に従い整形。
 5. **出力**: テキスト or JSON。`--max-items` で打ち切り。
 
 # 7. エラーハンドリング & 終了コード

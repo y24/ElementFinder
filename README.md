@@ -33,9 +33,6 @@ cd elementfinder
 
 # パッケージをインストール
 pip install .
-
-# または:開発モードでパッケージをインストール
-pip install -e .
 ```
 
 ### 依存関係
@@ -111,8 +108,7 @@ findui "アプリ" --json --fields "name,control_type,rectangle"
 ### その他のオプション
 
 ```powershell
-# 要素をハイライト表示
-findui "アプリ" --highlight
+
 
 # 詳細ログを出力
 findui "アプリ" --verbose
@@ -140,7 +136,7 @@ findui "アプリ" --timeout 10
 - `--anchor-title TITLE` - アンカーのタイトル
 - `--anchor-name NAME` - アンカーの名前
 - `--anchor-class-name CLASS` - アンカーのクラス名
-- `--anchor-auto-id ID` - アンカーの自動ID
+- `--anchor-auto-id ID` - アンカーのAutomaton ID
 - `--anchor-found-index INDEX` - 複数マッチ時の選択インデックス（既定: 0）
 
 ### カーソル指定
@@ -154,8 +150,8 @@ findui "アプリ" --timeout 10
 - `--fields FIELDS` - JSON出力時の出力フィールド（カンマ区切り）
 - `--pywinauto-native` - pywinautoのprint_control_identifiers()を直接実行
 - `--max-items COUNT` - 最大出力件数
-- `--highlight` - 出力対象要素をハイライト表示
-- `--show-rectangle` - 座標情報を表示する
+
+- `--show-rectangle` - 各要素の座標情報を表示する
 
 ### フィルター
 
@@ -166,30 +162,18 @@ findui "アプリ" --timeout 10
 - `--verbose` - 詳細ログを出力
 - `--version` - バージョン情報を表示
 
-## 使用例
+## 詳細な使用例
 
-### 1. メモ帳の要素構造を確認
-
-```powershell
-findui "タイトルなし - メモ帳" --depth 2 --only-visible
-```
-
-### 2. 設定画面の特定要素を起点に詳細取得
+### 1. 設定画面の特定要素を起点にすべて取得
 
 ```powershell
 findui "設定" --anchor-control-type TabItem --anchor-title "詳細設定" --depth max --json
 ```
 
-### 3. カーソル位置から要素情報を取得
+### 2. カーソル位置から要素情報を詳細取得
 
 ```powershell
-findui "アプリケーション名" --cursor --cursor-delay 3 --highlight --verbose
-```
-
-### 4. 座標情報を表示して出力
-
-```powershell
-findui "アプリ" --show-rectangle
+findui "アプリケーション名" --cursor --cursor-delay 3 --verbose
 ```
 
 ## 出力形式
@@ -239,6 +223,8 @@ child_window(title="タイトルなし - メモ帳", control_type="Window", clas
 
 #### 1. "comtypes not found"エラー
 
+インストールしてください：
+
 ```powershell
 pip install comtypes>=1.1.14
 ```
@@ -265,14 +251,9 @@ findui "アプリ名" --depth 2 --max-items 100 --only-visible
 
 ## 開発
 
-このプロジェクトは社内ツールとして開発されており、テスト環境は最小限に抑えられています。
-
 ### 開発環境のセットアップ
 
 ```powershell
-# 依存関係をインストール
-pip install -r requirements.txt
-
 # パッケージを開発モードでインストール
 pip install -e .
 ```

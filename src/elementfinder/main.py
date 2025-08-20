@@ -121,10 +121,7 @@ class ElementFinderApp:
             max_items=self.args['max_items']
         )
         
-        # 4. ハイライト表示（指定された場合）
-        if self.args['highlight']:
-            self.logger.info("ステップ4: ハイライト表示")
-            element_finder.highlight_elements(elements)
+
         
         # 5. 出力
         self.logger.info("ステップ5: 出力生成")

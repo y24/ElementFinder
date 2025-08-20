@@ -185,11 +185,7 @@ class ElementFinderArgumentParser:
             help='最大出力件数'
         )
         
-        output_group.add_argument(
-            '--highlight',
-            action='store_true',
-            help='出力対象要素をハイライト表示'
-        )
+
         
         output_group.add_argument(
             '--show-rectangle',
@@ -332,7 +328,7 @@ class ElementFinderArgumentParser:
         else:
             validated['max_items'] = None
         
-        validated['highlight'] = args_dict['highlight']
+
         validated['show_rectangle'] = args_dict.get('show_rectangle', False)
         
         # フィルター関連
