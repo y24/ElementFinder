@@ -31,10 +31,10 @@ ElementFinderは、WindowsのGUIアプリケーションの要素を効率的に
 git clone https://github.com/your-org/elementfinder.git
 cd elementfinder
 
-# 依存関係をインストール
-pip install -r requirements.txt
+# パッケージをインストール
+pip install .
 
-# パッケージをインストール（開発モード）
+# または:開発モードでパッケージをインストール
 pip install -e .
 ```
 

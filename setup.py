@@ -36,6 +36,7 @@ setup(
     install_requires=[
         "pywinauto>=0.6.8",
         "comtypes>=1.1.14",
+        "pywin32>=306",
     ],
     
 
