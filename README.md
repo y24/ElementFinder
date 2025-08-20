@@ -4,236 +4,303 @@ GUIアプリケーションの要素特定を効率化するCLIツール
 
 ## 概要
 
-ElementFinderは、WindowsのGUIアプリケーションから要素を効率的に特定し、pywinautoでの自動化を支援するためのコマンドラインツールです。
+ElementFinderは、WindowsのGUIアプリケーションの要素を効率的に特定し、pywinautoでの自動化を支援するCLIツールです。対象ウィンドウの要素階層を取得し、pywinautoで使用できるセレクタを生成したり、JSON形式での構造化データとして出力することができます。
 
-「ウィンドウ全体→アンカーで範囲を絞る→浅い階層だけ出す→欲しい属性で刺す」をサクッと実行できます。
+## 主な機能
 
-## 特徴
-
-- **効率的な要素検索**: 深度制限とアンカー機能で必要な要素だけを抽出
-- **複数バックエンド対応**: win32とUIAバックエンドをサポート
-- **柔軟な出力形式**: 人間向けテキストと機械向けJSON出力
-- **カーソル連携**: マウス位置をアンカーとして使用可能
-- **pywinautoセレクタ生成**: 自動化スクリプト作成を支援
+- **ウィンドウ特定**: タイトル名（完全一致・正規表現）でウィンドウを特定
+- **要素列挙**: 指定した深度まで要素階層を取得
+- **アンカー機能**: 特定の要素を起点とした子要素の取得
+- **カーソル機能**: マウスカーソル位置の要素をアンカーとして使用
+- **複数の出力形式**: テキスト、JSON、pywinautoセレクタ生成
+- **フィルタリング**: 可視要素のみの出力、最大件数制限
+- **バックエンド対応**: Win32・UI Automation両対応
+- **ハイライト表示**: 対象要素の視覚的な確認
 
 ## インストール
 
-### 依存関係
+### 前提条件
 
-- Python 3.9以上（推奨: 3.10以上）
-- Windows 10/11（x64）
+- Python 3.9以上
+- Windows 10/11 (x64)
 
-### セットアップ
+### インストール方法
 
-```bash
-# 本番環境
+```powershell
+# リポジトリをクローン
+git clone https://github.com/your-org/elementfinder.git
+cd elementfinder
+
+# 依存関係をインストール
 pip install -r requirements.txt
 
-# 開発環境
-pip install -r requirements-dev.txt
-
-# パッケージとしてインストール
+# パッケージをインストール（開発モード）
 pip install -e .
 ```
 
-## 基本的な使用方法
+### 依存関係
 
-### 1. 簡単な要素列挙
+- `pywinauto>=0.6.8` - Windows GUI自動化ライブラリ
+- `comtypes>=1.1.14` - UI Automationバックエンド用
+- `pywin32>=306` - Win32 APIアクセス用
 
-```bash
+## 使用方法
+
+### 基本的な使用方法
+
+```powershell
 # メモ帳の要素を3階層まで取得
-elementfinder "メモ帳"
+elementfinder "無題 - メモ帳"
 
-# 設定ウィンドウをUIA Backend で取得
-elementfinder "設定" --backend uia
+# 正規表現でウィンドウを検索
+elementfinder ".*設定.*" --title-re
+
+# UI Automationバックエンドを使用
+elementfinder "アプリ名" --backend uia
 ```
-
-### 2. アンカーを使用した範囲絞り込み
-
-```bash
-# Paneタイプの要素をアンカーにして検索
-elementfinder "アプリ - 設定" --backend uia --anchor-control-type Pane --depth 3
-
-# 複数条件でアンカーを特定
-elementfinder "アプリ" --anchor-title "詳細設定" --anchor-class-name "Dialog"
-```
-
-### 3. JSON出力とフィールド指定
-
-```bash
-# JSON形式で出力
-elementfinder "アプリ" --json
-
-# 特定のフィールドのみ出力
-elementfinder "アプリ" --json --fields name,auto_id,control_type,rectangle
-```
-
-### 4. カーソル位置の活用
-
-```bash
-# 5秒後のカーソル下要素をアンカーに
-elementfinder "アプリ" --cursor --cursor-delay 5 --depth max
-```
-
-### 5. フィルタリングと制限
-
-```bash
-# 可視要素のみ、最大50件
-elementfinder "アプリ" --only-visible --max-items 50
-
-# 要素をハイライト表示
-elementfinder "アプリ" --highlight
-```
-
-## コマンドラインオプション
-
-### 位置引数
-
-- `WINDOW_TITLE`: ウィンドウタイトル（完全一致、`--title-re`で正規表現可）
-
-### 主要オプション
-
-- `--backend {win32,uia}`: バックエンド選択（デフォルト: win32）
-- `--depth <N|max>`: 検索深度（デフォルト: 3）
-- `--timeout <SEC>`: ウィンドウ待機時間（デフォルト: 5）
 
 ### アンカー指定
 
-- `--anchor-control-type <TYPE>`: アンカーのcontrol_type（UIA用）
-- `--anchor-title <TEXT>`: アンカーのタイトル
-- `--anchor-name <TEXT>`: アンカーの名前
-- `--anchor-class-name <CLASS>`: アンカーのクラス名
-- `--anchor-auto-id <ID>`: アンカーの自動ID
-- `--anchor-found-index <INT>`: 複数マッチ時の選択インデックス（デフォルト: 0）
+```powershell
+# control_typeでアンカーを指定
+elementfinder "アプリ" --anchor-control-type Pane
+
+# タイトルでアンカーを指定
+elementfinder "アプリ" --anchor-title "設定"
+
+# 複数マッチ時のインデックス指定
+elementfinder "アプリ" --anchor-title "詳細" --anchor-found-index 1
+```
+
+### カーソル機能
+
+```powershell
+# カーソル位置の要素をアンカーにして取得
+elementfinder "アプリ" --cursor
+
+# カーソル取得までの遅延時間を指定
+elementfinder "アプリ" --cursor --cursor-delay 3
+```
+
+### 出力形式
+
+```powershell
+# JSON形式で出力
+elementfinder "アプリ" --json
+
+# 特定のフィールドのみをJSON出力
+elementfinder "アプリ" --json --fields "name,control_type,rectangle"
+
+# pywinautoセレクタを併記
+elementfinder "アプリ" --emit-selector
+```
+
+### フィルタリング・制限
+
+```powershell
+# 可視要素のみを出力
+elementfinder "アプリ" --only-visible
+
+# 最大出力件数を制限
+elementfinder "アプリ" --max-items 50
+
+# 取得階層の深さを指定
+elementfinder "アプリ" --depth 5
+
+# 全階層を取得
+elementfinder "アプリ" --depth max
+```
+
+### その他のオプション
+
+```powershell
+# 要素をハイライト表示
+elementfinder "アプリ" --highlight
+
+# 詳細ログを出力
+elementfinder "アプリ" --verbose
+
+# タイムアウト時間を指定
+elementfinder "アプリ" --timeout 10
+```
+
+## コマンドライン引数
+
+### 位置引数
+
+- `window_title` - ウィンドウタイトル（完全一致、--title-reで正規表現可）
+
+### 基本オプション
+
+- `--title-re` - ウィンドウタイトルを正規表現として扱う
+- `--backend {win32,uia}` - 使用するバックエンド（既定: win32）
+- `--depth DEPTH` - 取得する階層の深さ（0以上の整数 または "max", 既定: 3）
+- `--timeout SECONDS` - ウィンドウ待機タイムアウト秒数（既定: 5）
+
+### アンカー指定
+
+- `--anchor-control-type TYPE` - アンカーのcontrol_type（UIA用）
+- `--anchor-title TITLE` - アンカーのタイトル
+- `--anchor-name NAME` - アンカーの名前
+- `--anchor-class-name CLASS` - アンカーのクラス名
+- `--anchor-auto-id ID` - アンカーの自動ID
+- `--anchor-found-index INDEX` - 複数マッチ時の選択インデックス（既定: 0）
 
 ### カーソル指定
 
-- `--cursor`: マウスカーソル下の要素をアンカーとして使用
-- `--cursor-delay <SEC>`: カーソル取得までの遅延時間（デフォルト: 5）
+- `--cursor` - マウスカーソル下の要素をアンカーとして使用
+- `--cursor-delay SECONDS` - カーソル位置取得までの遅延時間（既定: 5）
 
 ### 出力制御
 
-- `--json`: JSON形式で出力
-- `--fields <CSV>`: JSON出力時のフィールド指定
-- `--emit-selector`: pywinautoセレクタを併記
-- `--max-items <N>`: 最大出力件数
-- `--highlight`: 出力対象要素をハイライト表示
+- `--json` - JSON形式で出力
+- `--fields FIELDS` - JSON出力時の出力フィールド（カンマ区切り）
+- `--emit-selector` - pywinautoセレクタを併記
+- `--pywinauto-native` - pywinautoのprint_control_identifiers()を直接実行
+- `--max-items COUNT` - 最大出力件数
+- `--highlight` - 出力対象要素をハイライト表示
 
 ### フィルター
 
-- `--only-visible`: 可視かつ有効な要素のみ出力
+- `--only-visible` - 可視かつ有効な要素のみ出力
 
 ### その他
 
-- `--verbose`: 詳細ログを出力
-- `--version`: バージョン情報を表示
+- `--verbose` - 詳細ログを出力
+- `--version` - バージョン情報を表示
 
 ## 使用例
 
-### 例1: 設定ダイアログの詳細分析
+### 1. メモ帳の要素構造を確認
 
-```bash
-elementfinder "アプリ - 設定" \
-  --backend uia \
-  --anchor-control-type Pane \
-  --anchor-title "設定" \
-  --depth 3 \
-  --only-visible \
-  --emit-selector
+```powershell
+elementfinder "無題 - メモ帳" --depth 2 --only-visible
 ```
 
-### 例2: JSON形式での自動化用データ取得
+### 2. 設定画面の特定要素を起点に詳細取得
 
-```bash
-elementfinder "計算機" \
-  --json \
-  --fields name,auto_id,control_type,rectangle \
-  --max-items 20 > calculator_elements.json
+```powershell
+elementfinder "設定" --anchor-control-type TabItem --anchor-title "詳細設定" --depth max --json
 ```
 
-### 例3: カーソル位置からの詳細検索
+### 3. カーソル位置から要素情報を取得
 
-```bash
-elementfinder "アプリ" \
-  --cursor \
-  --cursor-delay 3 \
-  --depth max \
-  --highlight
+```powershell
+elementfinder "アプリケーション名" --cursor --cursor-delay 3 --highlight --verbose
+```
+
+### 4. pywinautoスクリプト用のセレクタ生成
+
+```powershell
+elementfinder "電卓" --anchor-title "結果" --emit-selector --max-items 10
 ```
 
 ## 出力形式
 
-### テキスト出力（デフォルト）
+### テキスト形式（デフォルト）
 
 ```
-[0] Window name='メモ帳' class='Notepad' visible=True enabled=True rect=(100,100,800,600)
-  [1] Edit name='' auto_id='edit1' class='Edit' visible=True enabled=True rect=(110,130,790,580)
-  [2] MenuBar name='メニュー バー' class='#32768' visible=True enabled=True rect=(100,100,800,130)
-    [3] MenuItem name='ファイル(F)' class='#32768' visible=True enabled=True rect=(100,100,150,130)
+[0] Window: "無題 - メモ帳" (rectangle=[0, 0, 800, 600])
+  [1] Document: "" (class_name="Edit", rectangle=[8, 31, 784, 539])
+  [2] Button: "最小化" (class_name="Button", rectangle=[745, 0, 770, 25])
 ```
 
-### JSON出力
+### JSON形式
 
 ```json
 [
   {
     "index": 0,
-    "depth": 1,
-    "name": "メモ帳",
-    "title": "メモ帳",
-    "auto_id": null,
+    "depth": 0,
+    "name": null,
+    "title": "無題 - メモ帳",
     "control_type": "Window",
-    "class_name": "Notepad",
-    "rectangle": [100, 100, 800, 600],
+    "rectangle": [0, 0, 800, 600],
     "visible": true,
-    "enabled": true,
-    "path": "Window[1]"
+    "enabled": true
   }
 ]
 ```
 
-## 終了コード
-
-- `0`: 正常終了
-- `1`: ウィンドウ未検出（タイムアウト）
-- `2`: アンカー未検出
-- `3`: カーソル取得失敗
-- `4`: 要素0件（フィルタにより空）
-- `5`: 無効な引数
-- `100`: 予期しない例外
-
-## 開発情報
-
-### プロジェクト構造
+### セレクタ併記形式
 
 ```
-ElementFinder/
-├── src/elementfinder/
-│   ├── cli/          # CLI関連
-│   ├── core/         # コア機能
-│   ├── output/       # 出力機能
-│   └── utils/        # ユーティリティ
-├── tests/            # テスト
-├── requirements.txt  # 依存関係
-└── setup.py         # パッケージ設定
+[0] Window: "無題 - メモ帳"
+    Selector: window(title="無題 - メモ帳")
+  [1] Document: ""
+    Selector: window(title="無題 - メモ帳").child_window(control_type="Document")
 ```
 
-### 開発環境セットアップ
+## エラーコード
 
-```bash
+- `0` - 正常終了
+- `1` - ウィンドウが見つからない
+- `2` - アンカーが見つからない
+- `3` - カーソル位置の取得に失敗
+- `10` - 引数エラー
+- `100` - 予期しないエラー
+- `130` - ユーザー中断（Ctrl+C）
+
+## トラブルシューティング
+
+### よくある問題
+
+#### 1. "comtypes not found"エラー
+
+```powershell
+pip install comtypes>=1.1.14
+```
+
+#### 2. 管理者権限が必要な場合
+
+一部のアプリケーションでは、ElementFinderを管理者として実行する必要があります。
+
+#### 3. UIAバックエンドで要素が見つからない
+
+Win32バックエンドを試してください：
+
+```powershell
+elementfinder "アプリ名" --backend win32
+```
+
+#### 4. 大量の要素で動作が重い
+
+出力を制限してください：
+
+```powershell
+elementfinder "アプリ名" --depth 2 --max-items 100 --only-visible
+```
+
+## 開発
+
+### 開発環境のセットアップ
+
+```powershell
 # 開発用依存関係のインストール
 pip install -r requirements-dev.txt
 
-# 開発モードでインストール
-pip install -e .
+# テストの実行
+python -m pytest
 
-# テスト実行
-pytest
+# カバレッジ付きテスト
+python -m pytest --cov=src/elementfinder
 
-# コード品質チェック
-black src/ tests/
-flake8 src/ tests/
+# 静的解析
+flake8 src/
 mypy src/
+```
+
+### テスト
+
+```powershell
+# 全テストの実行
+python -m pytest tests/
+
+# 特定のテストのみ
+python -m pytest tests/test_core/test_element_finder.py
+
+# E2Eテスト
+python -m pytest tests/test_integration.py
 ```
 
 ## ライセンス
@@ -242,16 +309,21 @@ MIT License
 
 ## 貢献
 
-プルリクエストや課題報告をお待ちしています。
+プルリクエストやイシューの報告を歓迎します。
 
-## 将来の機能
+## サポート
 
-- アンカーの多段指定
-- 簡易クエリフィルタ機能
-- アクション実行機能
-- 録画・再生機能
-- クロスプラットフォーム対応
+- バグレポート: [Issues](https://github.com/your-org/elementfinder/issues)
+- ドキュメント: [Wiki](https://github.com/your-org/elementfinder/wiki)
+- ソースコード: [GitHub](https://github.com/your-org/elementfinder)
 
----
+## 更新履歴
 
-**注意**: 現在のバージョンは初期実装段階です。カーソル機能などの一部機能は今後のバージョンで実装予定です。
+### v0.1.0 (開発版)
+
+- 初回リリース
+- 基本的な要素特定・列挙機能
+- アンカー・カーソル機能
+- JSON・テキスト出力
+- Win32・UI Automation対応
+- ハイライト表示機能
