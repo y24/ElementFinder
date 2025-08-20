@@ -66,24 +66,29 @@ class TextFormatter:
         # 基本情報の組み立て
         parts = [f"[{element.index}]"]
         
+        # ★ 識別情報を最初に表示（ユーザーが見やすくするため）
+        display_text = self._get_display_text(element)
+        if display_text:
+            parts.append(f'"{display_text}"')
+        
         # 要素種別
-        if element.control_type:
+        if element.control_type and isinstance(element.control_type, str):
             parts.append(str(element.control_type))
-        elif element.class_name:
+        elif element.class_name and isinstance(element.class_name, str):
             parts.append(str(element.class_name))
         else:
             parts.append("Element")
         
-        # 名前/タイトル
-        if element.name:
+        # 名前/タイトル（display_textと異なる場合のみ）
+        if element.name and isinstance(element.name, str) and element.name != display_text:
             parts.append(f"name='{str(element.name)}'")
         
         # auto_id
-        if element.auto_id:
+        if element.auto_id and isinstance(element.auto_id, str):
             parts.append(f"auto_id='{str(element.auto_id)}'")
         
         # クラス名（control_typeと異なる場合のみ）
-        if element.class_name and element.class_name != element.control_type:
+        if element.class_name and isinstance(element.class_name, str) and element.class_name != element.control_type:
             parts.append(f"class='{str(element.class_name)}'")
         
         # 状態情報
@@ -99,6 +104,48 @@ class TextFormatter:
             parts.append(f"rect={rect_str}")
         
         return f"{indent}{' '.join(parts)}"
+    
+    def _get_display_text(self, element: ElementInfo) -> str:
+        """
+        要素の表示用テキストを決定します
+        
+        Args:
+            element: 要素情報
+        
+        Returns:
+            str: 表示用テキスト（空文字列の場合もあり）
+        """
+        # 優先順位：name > auto_id > class_name (要素種別として使えるもの)
+        
+        # 1. nameがある場合（ボタンテキスト、ラベルなど）
+        if element.name and isinstance(element.name, str) and element.name.strip():
+            return element.name.strip()
+        
+        # 2. auto_idがある場合（UIA環境での識別子）
+        if element.auto_id and isinstance(element.auto_id, str) and element.auto_id.strip():
+            return f"#{element.auto_id.strip()}"
+        
+        # 3. control_typeがある場合
+        if element.control_type and isinstance(element.control_type, str) and element.control_type.strip():
+            return f"<{element.control_type.strip()}>"
+        
+        # 4. class_nameがある場合（最後の手段）
+        if element.class_name and isinstance(element.class_name, str) and element.class_name.strip():
+            # よくあるクラス名の場合は短縮表示
+            class_name = element.class_name.strip()
+            if 'Button' in class_name:
+                return "<Button>"
+            elif 'Edit' in class_name:
+                return "<Edit>"
+            elif 'Static' in class_name:
+                return "<Static>"
+            elif 'Text' in class_name:
+                return "<Text>"
+            else:
+                return f"<{class_name}>"
+        
+        # 5. 識別情報がない場合
+        return ""
     
     def _generate_selector(self, element: ElementInfo) -> Optional[str]:
         """

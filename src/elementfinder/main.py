@@ -11,8 +11,9 @@ from typing import Dict, Any, Optional
 from .cli.parser import parse_command_line
 from .core.window_finder import create_window_finder
 from .core.element_finder import create_element_finder
+from .core.cursor_handler import create_cursor_handler
 from .output.formatters import create_formatter
-from .utils.exceptions import ElementFinderError
+from .utils.exceptions import ElementFinderError, CursorError
 from .utils.logging import setup_logging, get_logger
 
 
@@ -143,7 +144,7 @@ class ElementFinderApp:
         """
         # カーソル指定の場合
         if self.args['cursor']:
-            return self._resolve_cursor_anchor()
+            return self._resolve_cursor_anchor(window)
         
         # アンカー条件指定の場合
         if self.args['anchor_conditions']:
@@ -153,28 +154,38 @@ class ElementFinderApp:
         self.logger.debug("アンカー未指定: ウィンドウ全体を対象")
         return window
     
-    def _resolve_cursor_anchor(self) -> Any:
+    def _resolve_cursor_anchor(self, target_window: Optional[Any] = None) -> Any:
         """
         カーソル位置のアンカーを解決します
+        
+        Args:
+            target_window: アンカー昇格用の対象ウィンドウ
         
         Returns:
             カーソル下の要素
         
-        Note:
-            現在は概念的な実装。将来的にDesktop.from_pointを使用
+        Raises:
+            CursorError: カーソル位置の取得に失敗した場合
         """
-        import time
-        
-        self.logger.info(f"カーソル位置取得まで{self.args['cursor_delay']}秒待機...")
-        time.sleep(self.args['cursor_delay'])
-        
-        # TODO: 実際のカーソル位置取得実装
-        # from pywinauto import Desktop
-        # point = win32gui.GetCursorPos()
-        # element = Desktop(backend=self.args['backend']).from_point(point[0], point[1])
-        
-        self.logger.warning("カーソル機能は未実装です。ウィンドウ全体を使用します。")
-        raise NotImplementedError("カーソル機能は今後のバージョンで実装予定です")
+        try:
+            cursor_handler = create_cursor_handler(self.args['backend'])
+            
+            # カーソル下の要素を取得（アンカー昇格は行わない）
+            element = cursor_handler.get_cursor_element(
+                delay=self.args['cursor_delay'],
+                target_window=None  # アンカー昇格を無効化
+            )
+            
+            self.logger.info(f"カーソル位置の要素をアンカーとして使用: {type(element).__name__}")
+            
+            return element
+            
+        except CursorError as e:
+            self.logger.error(f"カーソルアンカー解決失敗: {e}")
+            raise e
+        except Exception as e:
+            self.logger.error(f"カーソルアンカー解決で予期しないエラー: {e}")
+            raise CursorError(f"カーソル位置の解決に失敗しました: {e}")
     
     def _resolve_condition_anchor(self, window) -> Any:
         """
