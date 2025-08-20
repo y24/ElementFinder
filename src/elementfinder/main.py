@@ -263,7 +263,8 @@ class ElementFinderApp:
                 formatter = create_formatter(
                     'pywinauto',
                     emit_selector=True,  # child_windowセレクタは常に表示
-                    show_alternative_ids=True
+                    show_alternative_ids=True,
+                    show_rectangle=self.args['show_rectangle']  # show_rectangleオプション
                 )
                 output = formatter.format_elements(elements)
             

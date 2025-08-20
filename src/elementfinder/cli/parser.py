@@ -194,6 +194,12 @@ class ElementFinderArgumentParser:
             action='store_true',
             help='出力対象要素をハイライト表示'
         )
+        
+        output_group.add_argument(
+            '--show-rectangle',
+            action='store_true',
+            help='座標情報を表示する'
+        )
     
     def _add_filter_options(self, parser: argparse.ArgumentParser) -> None:
         """フィルター関連オプションを追加"""
@@ -331,6 +337,7 @@ class ElementFinderArgumentParser:
             validated['max_items'] = None
         
         validated['highlight'] = args_dict['highlight']
+        validated['show_rectangle'] = args_dict.get('show_rectangle', False)
         
         # フィルター関連
         validated['only_visible'] = args_dict['only_visible']

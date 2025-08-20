@@ -159,6 +159,7 @@ findui "アプリ" --timeout 10
 - `--pywinauto-native` - pywinautoのprint_control_identifiers()を直接実行
 - `--max-items COUNT` - 最大出力件数
 - `--highlight` - 出力対象要素をハイライト表示
+- `--show-rectangle` - 座標情報を表示する
 
 ### フィルター
 
@@ -195,16 +196,22 @@ findui "アプリケーション名" --cursor --cursor-delay 3 --highlight --ver
 findui "電卓" --anchor-title "結果" --emit-selector --max-items 10
 ```
 
+### 5. 座標情報を表示して出力
+
+```powershell
+findui "アプリ" --show-rectangle
+```
+
 ## 出力形式
 
 ### テキスト形式（デフォルト）
 
 ```
-Window - 'タイトルなし - メモ帳'    (L0, T0, R800, B600)
+Window - 'タイトルなし - メモ帳'
 ['タイトルなし - メモ帳', 'タイトルなし - メモ帳Window', 'Window']
 child_window(title="タイトルなし - メモ帳", control_type="Window", class_name="Notepad")
    | 
-   | Edit - ''    (L8, T31, R784, B539)
+   | Edit - ''
    | ['Edit', 'Edit1']
    | child_window(control_type="Edit", class_name="Edit")
 ```

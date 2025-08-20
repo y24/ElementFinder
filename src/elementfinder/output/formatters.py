@@ -67,14 +67,16 @@ class PywinautoStyleFormatter:
     pywinautoのprint_control_identifiers()風の出力フォーマッタ
     """
     
-    def __init__(self, emit_selector: bool = True, show_alternative_ids: bool = True):
+    def __init__(self, emit_selector: bool = True, show_alternative_ids: bool = True, show_rectangle: bool = False):
         """
         Args:
             emit_selector: child_windowセレクタを併記するか
             show_alternative_ids: 代替識別子リストを表示するか
+            show_rectangle: 座標情報を表示するか
         """
         self.emit_selector = emit_selector
         self.show_alternative_ids = show_alternative_ids
+        self.show_rectangle = show_rectangle
         self.logger = get_logger()
     
     def format_elements(self, elements: List[ElementInfo]) -> str:
@@ -162,7 +164,7 @@ class PywinautoStyleFormatter:
         
         # 位置情報
         position_part = ""
-        if element.rectangle:
+        if self.show_rectangle and element.rectangle:
             left, top, right, bottom = element.rectangle
             position_part = f"    (L{left}, T{top}, R{right}, B{bottom})"
         
