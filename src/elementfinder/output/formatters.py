@@ -91,10 +91,16 @@ class PywinautoStyleFormatter:
             return "要素が見つかりませんでした。"
         
         lines = []
-        for element in elements:
+        for i, element in enumerate(elements):
             # 各要素の出力セクションを生成
             element_lines = self._format_single_element(element)
             lines.extend(element_lines)
+            
+            # 最後の要素以外は空白行を追加（次の要素の階層に応じたパイプ付き）
+            if i < len(elements) - 1:
+                next_element = elements[i + 1]
+                blank_line_indent = self._get_pipe_indent(next_element.depth)
+                lines.append(blank_line_indent)
         
         return "\n".join(lines)
     
