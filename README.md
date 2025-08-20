@@ -174,7 +174,7 @@ elementfinder "アプリ" --timeout 10
 ### 1. メモ帳の要素構造を確認
 
 ```powershell
-elementfinder "無題 - メモ帳" --depth 2 --only-visible
+elementfinder "タイトルなし - メモ帳" --depth 2 --only-visible
 ```
 
 ### 2. 設定画面の特定要素を起点に詳細取得
@@ -200,9 +200,13 @@ elementfinder "電卓" --anchor-title "結果" --emit-selector --max-items 10
 ### テキスト形式（デフォルト）
 
 ```
-[0] Window: "無題 - メモ帳" (rectangle=[0, 0, 800, 600])
-  [1] Document: "" (class_name="Edit", rectangle=[8, 31, 784, 539])
-  [2] Button: "最小化" (class_name="Button", rectangle=[745, 0, 770, 25])
+Window - 'タイトルなし - メモ帳'    (L0, T0, R800, B600)
+['タイトルなし - メモ帳', 'タイトルなし - メモ帳Window', 'Window']
+child_window(title="タイトルなし - メモ帳", control_type="Window", class_name="Notepad")
+   | 
+   | Edit - ''    (L8, T31, R784, B539)
+   | ['Edit', 'Edit1']
+   | child_window(control_type="Edit", class_name="Edit")
 ```
 
 ### JSON形式
@@ -220,15 +224,6 @@ elementfinder "電卓" --anchor-title "結果" --emit-selector --max-items 10
     "enabled": true
   }
 ]
-```
-
-### セレクタ併記形式
-
-```
-[0] Window: "無題 - メモ帳"
-    Selector: window(title="無題 - メモ帳")
-  [1] Document: ""
-    Selector: window(title="無題 - メモ帳").child_window(control_type="Document")
 ```
 
 ## エラーコード
@@ -273,57 +268,15 @@ elementfinder "アプリ名" --depth 2 --max-items 100 --only-visible
 
 ## 開発
 
+このプロジェクトは社内ツールとして開発されており、テスト環境は最小限に抑えられています。
+
 ### 開発環境のセットアップ
 
 ```powershell
-# 開発用依存関係のインストール
-pip install -r requirements-dev.txt
+# 依存関係をインストール
+pip install -r requirements.txt
 
-# テストの実行
-python -m pytest
-
-# カバレッジ付きテスト
-python -m pytest --cov=src/elementfinder
-
-# 静的解析
-flake8 src/
-mypy src/
+# パッケージを開発モードでインストール
+pip install -e .
 ```
 
-### テスト
-
-```powershell
-# 全テストの実行
-python -m pytest tests/
-
-# 特定のテストのみ
-python -m pytest tests/test_core/test_element_finder.py
-
-# E2Eテスト
-python -m pytest tests/test_integration.py
-```
-
-## ライセンス
-
-MIT License
-
-## 貢献
-
-プルリクエストやイシューの報告を歓迎します。
-
-## サポート
-
-- バグレポート: [Issues](https://github.com/your-org/elementfinder/issues)
-- ドキュメント: [Wiki](https://github.com/your-org/elementfinder/wiki)
-- ソースコード: [GitHub](https://github.com/your-org/elementfinder)
-
-## 更新履歴
-
-### v0.1.0 (開発版)
-
-- 初回リリース
-- 基本的な要素特定・列挙機能
-- アンカー・カーソル機能
-- JSON・テキスト出力
-- Win32・UI Automation対応
-- ハイライト表示機能

@@ -38,22 +38,7 @@ setup(
         "comtypes>=1.1.14",
     ],
     
-    # 開発用依存関係
-    extras_require={
-        "dev": [
-            "pytest>=7.0.0",
-            "pytest-cov>=4.0.0",
-            "black>=22.0.0",
-            "flake8>=5.0.0",
-            "mypy>=0.991",
-            "isort>=5.10.0",
-        ],
-        "test": [
-            "pytest>=7.0.0",
-            "pytest-cov>=4.0.0",
-            "pytest-mock>=3.8.0",
-        ],
-    },
+
     
     # エントリーポイント
     entry_points={
