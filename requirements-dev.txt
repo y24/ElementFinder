@@ -1,0 +1,23 @@
+# ElementFinder - 開発環境用依存関係
+# 本番環境の依存関係を含む
+-r requirements.txt
+
+# テストフレームワーク
+pytest>=7.0.0
+pytest-cov>=4.0.0        # カバレッジ測定
+pytest-mock>=3.8.0       # モック機能
+
+# コード品質ツール
+black>=22.0.0             # コードフォーマッタ
+flake8>=5.0.0             # Linter
+mypy>=0.991               # 型チェック
+isort>=5.10.0             # import文ソート
+
+# 開発支援ツール
+pre-commit>=2.20.0        # Git フック
+bandit>=1.7.4             # セキュリティチェック
+safety>=2.2.0             # 脆弱性チェック
+
+# ドキュメント生成（将来使用）
+# sphinx>=5.0.0
+# sphinx-rtd-theme>=1.0.0

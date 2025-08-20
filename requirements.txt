@@ -1,0 +1,17 @@
+# ElementFinder - 本番環境用依存関係
+# GUIアプリケーションの要素特定を効率化するCLIツール
+
+# Windows GUI自動化ライブラリ
+pywinauto>=0.6.8
+
+# UIA（UI Automation）バックエンド用
+comtypes>=1.1.14
+
+# 標準ライブラリ（明示的記載）
+# - argparse: コマンドライン引数解析
+# - json: JSON出力
+# - re: 正規表現
+# - time: タイムアウト処理
+# - logging: ロギング
+# - sys: システム操作（終了コード等）
+# - os: OS操作
