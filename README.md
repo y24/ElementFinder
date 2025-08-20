@@ -1,6 +1,6 @@
 # ElementFinder
 
-GUIアプリケーションの要素特定を効率化するCLIツール（コマンド名: findui）
+GUIアプリケーションの要素特定を効率化するCLIツール
 
 ## 概要
 
