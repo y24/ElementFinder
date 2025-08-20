@@ -60,36 +60,25 @@ class TextFormatter:
         Returns:
             str: フォーマット済み行
         """
-        # インデント（深度に応じて）
-        indent = "  " * (element.depth - 1) if element.depth > 1 else ""
+        # パイプ文字を使った階層表示
+        indent = self._get_pipe_indent(element.depth)
         
-        # 基本情報の組み立て
+        # 基本情報の組み立て - print_control_identifiers()風
         parts = [f"[{element.index}]"]
         
-        # ★ 識別情報を最初に表示（ユーザーが見やすくするため）
-        display_text = self._get_display_text(element)
-        if display_text:
-            parts.append(f'"{display_text}"')
+        # 要素名/タイトルをシングルクォートで囲む
+        display_name = self._get_element_name(element)
+        if display_name:
+            parts.append(f"'{display_name}'")
         
-        # 要素種別
-        if element.control_type and isinstance(element.control_type, str):
-            parts.append(str(element.control_type))
-        elif element.class_name and isinstance(element.class_name, str):
-            parts.append(str(element.class_name))
-        else:
-            parts.append("Element")
+        # 要素種別（control_typeまたはclass_name）
+        element_type = self._get_element_type(element)
+        if element_type:
+            parts.append(element_type)
         
-        # 名前/タイトル（display_textと異なる場合のみ）
-        if element.name and isinstance(element.name, str) and element.name != display_text:
-            parts.append(f"name='{str(element.name)}'")
-        
-        # auto_id
-        if element.auto_id and isinstance(element.auto_id, str):
-            parts.append(f"auto_id='{str(element.auto_id)}'")
-        
-        # クラス名（control_typeと異なる場合のみ）
-        if element.class_name and isinstance(element.class_name, str) and element.class_name != element.control_type:
-            parts.append(f"class='{str(element.class_name)}'")
+        # クラス名（print_control_identifiers風に常に表示）
+        if element.class_name and isinstance(element.class_name, str):
+            parts.append(f"class='{element.class_name}'")
         
         # 状態情報
         if element.visible is not None:
@@ -104,6 +93,77 @@ class TextFormatter:
             parts.append(f"rect={rect_str}")
         
         return f"{indent}{' '.join(parts)}"
+    
+    def _get_element_name(self, element: ElementInfo) -> str:
+        """
+        要素の表示名を取得します（print_control_identifiers風）
+        
+        Args:
+            element: 要素情報
+        
+        Returns:
+            str: 表示名
+        """
+        # nameが存在する場合はそれを使用
+        if element.name and isinstance(element.name, str) and element.name.strip():
+            return element.name.strip()
+        
+        # nameが空の場合は空文字列を返す（print_control_identifiers風）
+        return ""
+    
+    def _get_element_type(self, element: ElementInfo) -> str:
+        """
+        要素タイプを取得します
+        
+        Args:
+            element: 要素情報
+        
+        Returns:
+            str: 要素タイプ
+        """
+        # control_typeを優先
+        if element.control_type and isinstance(element.control_type, str):
+            return element.control_type
+        
+        # control_typeがない場合はclass_name
+        if element.class_name and isinstance(element.class_name, str):
+            return element.class_name
+        
+        # どちらもない場合はElement
+        return "Element"
+    
+    def _get_pipe_indent(self, depth: int) -> str:
+        """
+        パイプ文字を使った階層インデントを生成します
+        
+        Args:
+            depth: 要素の深度
+        
+        Returns:
+            str: インデント文字列
+        """
+        if depth <= 1:
+            return ""
+        
+        # サンプル形式に合わせた階層表示:
+        # depth 1: "" (パイプなし)
+        # depth 2: "   | "
+        # depth 3: "   |    | "  
+        # depth 4: "   |    |    | "
+        
+        # 各階層に対してパイプとスペースを追加
+        # depth 2: "   | "
+        # depth 3: "   |    | "
+        # depth 4: "   |    |    | "
+        
+        indent = ""
+        for level in range(2, depth + 1):
+            if level == 2:
+                indent += "   | "
+            else:
+                indent += "   | "
+        
+        return indent
     
     def _get_display_text(self, element: ElementInfo) -> str:
         """

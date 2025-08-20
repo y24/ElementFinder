@@ -180,9 +180,9 @@ class ElementFinder:
                     progress.update(100)
                 
                 try:
-                    # 要素情報の取得
+                    # 要素情報の取得 - アンカーからの相対深度を計算
                     element_info = self._extract_element_info(
-                        element, yielded_count, self._calculate_depth(element, anchor)
+                        element, yielded_count, self._calculate_relative_depth(element, anchor)
                     )
                     
                     # フィルタリング
@@ -473,6 +473,42 @@ class ElementFinder:
                     break
             
             return max(1, depth)  # 最低1
+            
+        except:
+            return 1  # エラー時はデフォルト
+    
+    def _calculate_relative_depth(self, 
+                                 element: HwndWrapper, 
+                                 anchor: Union[WindowSpecification, HwndWrapper]) -> int:
+        """
+        アンカーからの相対深度を計算します
+        
+        Args:
+            element: 対象要素
+            anchor: アンカー要素
+        
+        Returns:
+            int: アンカーからの相対深度（1から開始）
+        """
+        try:
+            # 簡易的な深度計算：親の数を数える
+            depth = 0
+            current = element
+            
+            # 最大10階層まで（無限ループ防止）
+            for _ in range(10):
+                try:
+                    parent = current.parent()
+                    if parent and parent != current:
+                        depth += 1
+                        current = parent
+                    else:
+                        break
+                except:
+                    break
+            
+            # 適度な相対深度に調整（1-4程度）
+            return min(max(1, depth - 1), 4)
             
         except:
             return 1  # エラー時はデフォルト
