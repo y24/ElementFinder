@@ -14,7 +14,7 @@ ElementFinderは、WindowsのGUIアプリケーションの要素を効率的に
 - **アンカー機能**: 特定の要素を起点とした子要素の取得
 - **フィルタリング**: 可視要素のみの出力、最大件数制限
 - **複数の出力形式**: テキスト、JSON、pywinautoセレクタ生成
-- **バックエンド対応**: Win32・UI Automation両対応
+- **バックエンド対応**: UI Automation（デフォルト）・Win32対応
 
 ## インストール
 
@@ -51,8 +51,8 @@ findui "電卓"
 # 正規表現でウィンドウを検索
 findui ".*設定.*" --title-re
 
-# UIAバックエンドを使用（デフォルトはwin32）
-findui "アプリ名" --backend uia
+# Win32バックエンドを使用（デフォルトはuia）
+findui "アプリ名" --backend win32
 ```
 
 ### カーソル機能
@@ -232,12 +232,12 @@ pip install comtypes>=1.1.14
 
 一部のアプリケーションでは、ElementFinderを管理者として実行する必要があります。
 
-#### 3. UIAバックエンドで要素が見つからない
+#### 3. Win32バックエンドで要素が見つからない
 
-Win32バックエンドを試してください：
+UIAバックエンドを試してください：
 
 ```powershell
-findui "アプリ名" --backend win32
+findui "アプリ名" --backend uia
 ```
 
 #### 4. 大量の要素で動作が重い

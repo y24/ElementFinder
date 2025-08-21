@@ -23,7 +23,7 @@ class WindowFinder:
     ウィンドウの特定とアクセスを担当するクラス
     """
     
-    def __init__(self, backend: str = 'win32'):
+    def __init__(self, backend: str = 'uia'):
         """
         Args:
             backend: 使用するバックエンド ('win32' または 'uia')
@@ -328,7 +328,7 @@ class WindowFinder:
         self.logger.debug("WindowFinderをクローズしました")
 
 
-def create_window_finder(backend: str = 'win32') -> WindowFinder:
+def create_window_finder(backend: str = 'uia') -> WindowFinder:
     """
     WindowFinderインスタンスを作成します（便利関数）
     

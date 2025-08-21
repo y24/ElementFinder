@@ -79,8 +79,8 @@ class ElementFinderArgumentParser:
         parser.add_argument(
             '--backend',
             choices=['win32', 'uia'],
-            default='win32',
-            help='使用するバックエンド（既定: win32）'
+            default='uia',
+            help='使用するバックエンド（既定: uia）'
         )
         
         parser.add_argument(

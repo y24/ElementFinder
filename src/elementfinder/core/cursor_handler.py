@@ -28,7 +28,7 @@ class CursorHandler:
     カーソル位置の要素取得とアンカー昇格を担当するクラス
     """
     
-    def __init__(self, backend: str = 'win32'):
+    def __init__(self, backend: str = 'uia'):
         """
         Args:
             backend: 使用するバックエンド ('win32' または 'uia')

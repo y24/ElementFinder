@@ -57,7 +57,7 @@ class ElementFinder:
     GUI要素の検索・列挙を担当するクラス
     """
     
-    def __init__(self, backend: str = 'win32'):
+    def __init__(self, backend: str = 'uia'):
         """
         Args:
             backend: 使用するバックエンド ('win32' または 'uia')
