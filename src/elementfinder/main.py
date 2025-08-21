@@ -164,7 +164,7 @@ class ElementFinderApp:
             target_window: アンカー昇格用の対象ウィンドウ
         
         Returns:
-            カーソル下の要素
+            カーソル下の要素、または親要素（--parent指定時）
         
         Raises:
             CursorError: カーソル位置の取得に失敗した場合
@@ -178,9 +178,22 @@ class ElementFinderApp:
                 target_window=None  # アンカー昇格を無効化
             )
             
-            self.logger.info(f"カーソル位置の要素をアンカーとして使用: {type(element).__name__}")
+            self.logger.info(f"カーソル位置の要素を取得: {type(element).__name__}")
             
-            return element
+            # --parentオプションが指定されている場合
+            if self.args.get('parent', False):
+                self.logger.info("--parentオプションが指定されています。親要素を取得します")
+                parent_element = cursor_handler.get_parent_element(element)
+                
+                if parent_element:
+                    self.logger.info(f"親要素をアンカーとして使用: {type(parent_element).__name__}")
+                    return parent_element
+                else:
+                    self.logger.warning("親要素が取得できませんでした。元の要素を使用します")
+                    return element
+            else:
+                self.logger.info(f"カーソル位置の要素をアンカーとして使用: {type(element).__name__}")
+                return element
             
         except CursorError as e:
             self.logger.error(f"カーソルアンカー解決失敗: {e}")

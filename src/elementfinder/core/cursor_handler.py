@@ -330,6 +330,78 @@ class CursorHandler:
         except Exception as e:
             self.logger.debug(f"要素情報ログ出力でエラー: {e}")
 
+    def get_parent_element(self, element: Any) -> Optional[Any]:
+        """
+        要素の親要素を取得します
+        
+        Args:
+            element: 対象要素
+        
+        Returns:
+            Optional[Any]: 親要素、またはNone（親が存在しない場合）
+        
+        Raises:
+            CursorError: 親要素の取得に失敗した場合
+        """
+        try:
+            self.logger.debug("親要素の取得を開始")
+            
+            # 親要素を取得
+            parent = element.parent()
+            
+            # 親要素の妥当性チェック
+            if parent is None:
+                self.logger.info("親要素が存在しません（トップレベル要素）")
+                return None
+            
+            if parent == element:
+                self.logger.info("親要素が自分自身です（循環参照）")
+                return None
+            
+            # 親要素の情報をログ出力
+            self._log_parent_info(parent)
+            
+            return parent
+            
+        except Exception as e:
+            self.logger.error(f"親要素取得でエラー: {e}")
+            raise CursorError(f"親要素の取得に失敗しました: {e}")
+    
+    def _log_parent_info(self, parent: Any) -> None:
+        """
+        親要素の情報をログ出力します
+        
+        Args:
+            parent: 親要素
+        """
+        try:
+            # 基本情報
+            parent_type = type(parent).__name__
+            self.logger.info(f"親要素取得成功: {parent_type}")
+            
+            # 親要素の詳細情報（可能な範囲で）
+            try:
+                window_text = parent.window_text() if hasattr(parent, 'window_text') else ""
+                if window_text:
+                    self.logger.debug(f"親要素テキスト: '{window_text}'")
+            except:
+                pass
+            
+            try:
+                class_name = parent.class_name() if hasattr(parent, 'class_name') else ""
+                if class_name:
+                    self.logger.debug(f"親要素クラス名: '{class_name}'")
+            except:
+                pass
+            
+            # 矩形情報
+            rect = self._safe_get_rectangle(parent)
+            if rect:
+                self.logger.debug(f"親要素矩形: ({rect[0]}, {rect[1]}, {rect[2]}, {rect[3]})")
+            
+        except Exception as e:
+            self.logger.debug(f"親要素情報ログ出力でエラー: {e}")
+
 
 def create_cursor_handler(backend: str = 'win32') -> CursorHandler:
     """

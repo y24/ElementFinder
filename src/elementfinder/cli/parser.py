@@ -44,6 +44,9 @@ class ElementFinderArgumentParser:
   # カーソル下の要素をアンカーに、全階層をJSON出力（ウィンドウタイトル不要）
   findui --cursor --depth max --json
   
+  # カーソル下の要素の親要素をアンカーに使用
+  findui --cursor --parent --depth 3
+  
   # 複数マッチ時の2番目を選択
   findui "アプリ" --anchor-title "詳細" --anchor-found-index 1
             ''',
@@ -150,6 +153,12 @@ class ElementFinderArgumentParser:
             type=str,
             default='5',
             help='カーソル位置取得までの遅延時間（秒, 既定: 5）'
+        )
+        
+        cursor_group.add_argument(
+            '--parent',
+            action='store_true',
+            help='カーソル下の要素の親要素をアンカーとして使用'
         )
     
     def _add_output_options(self, parser: argparse.ArgumentParser) -> None:
@@ -311,6 +320,7 @@ class ElementFinderArgumentParser:
         # カーソル関連
         validated['cursor'] = args_dict['cursor']
         validated['cursor_delay'] = validate_cursor_delay(args_dict['cursor_delay'])
+        validated['parent'] = args_dict.get('parent', False)
         
         # 出力関連
         validated['json'] = args_dict['json']
@@ -376,6 +386,14 @@ class ElementFinderArgumentParser:
         if args['cursor'] and args['anchor_conditions']:
             # 要件では「cursor が優先」と明記されているため、エラーではない
             pass
+        
+        # parentオプションはcursorと併用する必要がある
+        if args['parent'] and not args['cursor']:
+            raise InvalidArgumentError(
+                'parent',
+                'specified without --cursor',
+                '--parentは--cursorと併用してください'
+            )
         
         # アンカー条件が一つも指定されていない場合の確認
         if not args['cursor'] and not args['anchor_conditions']:

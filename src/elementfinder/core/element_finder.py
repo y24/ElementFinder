@@ -197,6 +197,12 @@ class ElementFinder:
             for element in descendants:
                 element_count += 1
                 
+
+                
+
+                
+
+                
                 # プログレス表示（1000件を超える場合）
                 if element_count == 1000 and not progress:
                     progress = ProgressLogger("要素取得", 10000)  # 概算
@@ -604,6 +610,43 @@ class ElementFinder:
         except:
             return f"Element[{depth}]"
     
+    def _is_same_element(self, element1: Any, element2: Any) -> bool:
+        """
+        2つの要素が同じ要素かどうかを判定します
+        
+        Args:
+            element1: 要素1
+            element2: 要素2
+        
+        Returns:
+            bool: 同じ要素の場合True
+        """
+        try:
+            # ハンドルが同じかチェック（最も確実）
+            if (hasattr(element1, 'handle') and hasattr(element2, 'handle') and 
+                element1.handle == element2.handle):
+                return True
+            
+            # オブジェクトが同じかチェック
+            if element1 == element2:
+                return True
+            
+            # テキストによる判定（最も確実）
+            try:
+                # テキスト情報を取得
+                text1 = self._safe_get_property(element1, 'window_text', '', is_method=True)
+                text2 = self._safe_get_property(element2, 'window_text', '', is_method=True)
+                
+                # テキストが一致する場合のみ同一要素と判定
+                if text1 and text2 and text1 == text2:
+                    return True
+            except:
+                pass
+            
+            return False
+        except:
+            return False
+
     def _should_include_element(self, element_info: ElementInfo, only_visible: bool) -> bool:
         """
         要素を出力対象に含めるかを判定します

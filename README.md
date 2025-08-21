@@ -63,6 +63,12 @@ findui --cursor
 
 # カーソル取得までの遅延時間を指定
 findui --cursor --cursor-delay 3
+
+# カーソル下の要素の親要素をアンカーとして使用
+findui --cursor --parent
+
+# 親要素をアンカーにして、その子要素をJSON形式で出力
+findui --cursor --parent --json --fields name,control_type,rectangle
 ```
 
 ### アンカー指定
