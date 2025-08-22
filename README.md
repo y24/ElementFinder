@@ -46,68 +46,68 @@ pip install .
 
 ```powershell
 # タイトルを指定してウィンドウを検索
-findel "電卓"
+uiaf "電卓"
 
 # 正規表現でウィンドウを検索
-findel ".*設定.*" --title-re
+uiaf ".*設定.*" --title-re
 
 # Win32バックエンドを使用（デフォルトはuia）
-findel "アプリ名" --backend win32
+uiaf "アプリ名" --backend win32
 ```
 
 ### カーソル機能
 
 ```powershell
 # カーソル位置の要素をアンカーにして取得（ウィンドウタイトル不要）
-findel --cursor
+uiaf --cursor
 
 # カーソル取得までの遅延時間を指定
-findel --cursor --cursor-delay 3
+uiaf --cursor --cursor-delay 3
 
 # カーソル下の要素の親要素をアンカーとして使用
-findel --cursor --parent
+uiaf --cursor --parent
 
 # 親要素をアンカーにして、その子要素をJSON形式で出力
-findel --cursor --parent --json --fields name,control_type,rectangle
+uiaf --cursor --parent --json --fields name,control_type,rectangle
 ```
 
 ### アンカー指定
 
 ```powershell
 # タイトルでアンカーを指定し、その子要素のみ取得
-findel "アプリ" --anchor-title "設定"
+uiaf "アプリ" --anchor-title "設定"
 
 # control_typeでアンカーを指定
-findel "アプリ" --anchor-control-type Button
+uiaf "アプリ" --anchor-control-type Button
 
 # 複数マッチ時のインデックス指定
-findel "アプリ" --anchor-control-type Button --anchor-found-index 1
+uiaf "アプリ" --anchor-control-type Button --anchor-found-index 1
 ```
 
 ### フィルタリング・制限
 
 ```powershell
 # 取得階層の深さを指定（デフォルト3）
-findel "アプリ" --depth 5
+uiaf "アプリ" --depth 5
 
 # 全階層を取得
-findel "アプリ" --depth max
+uiaf "アプリ" --depth max
 
 # 最大出力件数を制限
-findel "アプリ" --max-items 50
+uiaf "アプリ" --max-items 50
 
 # 可視要素のみを出力
-findel "アプリ" --only-visible
+uiaf "アプリ" --only-visible
 ```
 
 ### 出力形式
 
 ```powershell
 # JSON形式で出力
-findel "アプリ" --json
+uiaf "アプリ" --json
 
 # 特定のフィールドのみをJSON出力
-findel "アプリ" --json --fields "name,control_type,rectangle"
+uiaf "アプリ" --json --fields "name,control_type,rectangle"
 ```
 
 ### その他のオプション
@@ -116,10 +116,10 @@ findel "アプリ" --json --fields "name,control_type,rectangle"
 
 
 # 詳細ログを出力
-findel "アプリ" --verbose
+uiaf "アプリ" --verbose
 
 # タイムアウト時間を指定
-findel "アプリ" --timeout 10
+uiaf "アプリ" --timeout 10
 ```
 
 ## コマンドライン引数
@@ -172,13 +172,13 @@ findel "アプリ" --timeout 10
 ### 1. 設定画面の特定要素を起点にすべて取得
 
 ```powershell
-findel "設定" --anchor-control-type TabItem --anchor-title "詳細設定" --depth max --json
+uiaf "設定" --anchor-control-type TabItem --anchor-title "詳細設定" --depth max --json
 ```
 
 ### 2. カーソル位置から要素情報を詳細取得
 
 ```powershell
-findel "アプリケーション名" --cursor --cursor-delay 3 --verbose
+uiaf "アプリケーション名" --cursor --cursor-delay 3 --verbose
 ```
 
 ## 出力形式
@@ -243,7 +243,7 @@ pip install comtypes>=1.1.14
 UIAバックエンドを試してください：
 
 ```powershell
-findel "アプリ名" --backend uia
+uiaf "アプリ名" --backend uia
 ```
 
 #### 4. 大量の要素で動作が重い
@@ -251,7 +251,7 @@ findel "アプリ名" --backend uia
 出力を制限してください：
 
 ```powershell
-findel "アプリ名" --depth 2 --max-items 100 --only-visible
+uiaf "アプリ名" --depth 2 --max-items 100 --only-visible
 ```
 
 ## 開発

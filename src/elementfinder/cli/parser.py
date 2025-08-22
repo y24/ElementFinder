@@ -34,21 +34,21 @@ class ElementFinderArgumentParser:
             設定済みのArgumentParserインスタンス
         """
         parser = argparse.ArgumentParser(
-            prog='findel',
+            prog='uiaf',
             description='GUIアプリケーションの要素特定を効率化するCLIツール',
             epilog='''
 使用例:
   # 設定ウィンドウのPane要素をアンカーに、3階層まで取得（UIA）
-  findel "アプリ - 設定" --backend uia --anchor-control-type Pane --depth 3
+  uiaf "アプリ - 設定" --backend uia --anchor-control-type Pane --depth 3
   
   # カーソル下の要素をアンカーに、全階層をJSON出力（ウィンドウタイトル不要）
-  findel --cursor --depth max --json
+  uiaf --cursor --depth max --json
   
   # カーソル下の要素の親要素をアンカーに使用
-  findel --cursor --parent --depth 3
+  uiaf --cursor --parent --depth 3
   
   # 複数マッチ時の2番目を選択
-  findel "アプリ" --anchor-title "詳細" --anchor-found-index 1
+  uiaf "アプリ" --anchor-title "詳細" --anchor-found-index 1
             ''',
             formatter_class=argparse.RawDescriptionHelpFormatter
         )

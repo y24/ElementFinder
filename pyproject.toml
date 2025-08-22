@@ -8,4 +8,4 @@ dependencies = [
 ]
 
 [project.scripts]
-findel = "elementfinder.main:main"
+uiaf = "elementfinder.main:main"
