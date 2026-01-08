@@ -5,10 +5,12 @@ ElementFinder カーソル位置処理機能
 """
 
 import time
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, Dict
+import psutil
 
 try:
     import win32gui
+    import win32process
     _WIN32GUI_AVAILABLE = True
 except ImportError:
     _WIN32GUI_AVAILABLE = False
@@ -401,6 +403,322 @@ class CursorHandler:
             
         except Exception as e:
             self.logger.debug(f"親要素情報ログ出力でエラー: {e}")
+    
+    def get_element_detailed_info(self, element: Any, cursor_pos: tuple[int, int]) -> Dict[str, Any]:
+        """
+        要素の詳細情報を取得します（uiaとwin32の両方）
+        
+        Args:
+            element: 対象要素
+            cursor_pos: カーソル位置 (x, y)
+        
+        Returns:
+            Dict[str, Any]: 詳細情報の辞書
+        """
+        info = {
+            'cursor_position': cursor_pos,
+            'uia': {},
+            'win32': {}
+        }
+        
+        # UIAバックエンドで情報を取得
+        try:
+            uia_info = self._get_uia_element_info(element)
+            info['uia'] = uia_info
+        except Exception as e:
+            self.logger.debug(f"UIA情報取得エラー: {e}")
+            info['uia'] = {'error': str(e)}
+        
+        # Win32バックエンドで情報を取得
+        try:
+            win32_info = self._get_win32_element_info(element, cursor_pos)
+            info['win32'] = win32_info
+        except Exception as e:
+            self.logger.debug(f"Win32情報取得エラー: {e}")
+            info['win32'] = {'error': str(e)}
+        
+        return info
+    
+    def _get_uia_element_info(self, element: Any) -> Dict[str, Any]:
+        """
+        UIAバックエンドで要素情報を取得します
+        
+        Args:
+            element: 対象要素
+        
+        Returns:
+            Dict[str, Any]: UIA要素情報
+        """
+        info = {}
+        
+        try:
+            # window_text / name
+            if hasattr(element, 'window_text'):
+                try:
+                    info['window_text'] = element.window_text()
+                except:
+                    info['window_text'] = None
+            
+            if hasattr(element, 'name'):
+                try:
+                    info['name'] = element.name
+                except:
+                    try:
+                        info['name'] = element.name()
+                    except:
+                        info['name'] = None
+            
+            # control_type
+            if hasattr(element, 'control_type'):
+                try:
+                    val = element.control_type
+                    if callable(val):
+                        info['control_type'] = val()
+                    else:
+                        info['control_type'] = val
+                except:
+                    info['control_type'] = None
+            
+            # フォールバック: element_infoから取得
+            if (not info.get('control_type') and 
+                hasattr(element, 'element_info') and 
+                hasattr(element.element_info, 'control_type')):
+                try:
+                    info['control_type'] = element.element_info.control_type
+                except:
+                    pass
+            
+            # automation_id
+            if hasattr(element, 'automation_id'):
+                try:
+                    info['automation_id'] = element.automation_id()
+                except:
+                    info['automation_id'] = None
+            
+            # class_name
+            if hasattr(element, 'class_name'):
+                try:
+                    info['class_name'] = element.class_name()
+                except:
+                    info['class_name'] = None
+            
+            # friendly_class_name
+            if hasattr(element, 'friendly_class_name'):
+                try:
+                    info['friendly_class_name'] = element.friendly_class_name()
+                except:
+                    info['friendly_class_name'] = None
+            
+            # children_count
+            try:
+                children = element.children()
+                info['children_count'] = len(children) if children else 0
+            except:
+                try:
+                    children = list(element.descendants())
+                    info['children_count'] = len(children) if children else 0
+                except:
+                    info['children_count'] = None
+            
+            # depth (階層の深さ)
+            info['depth'] = self._calculate_element_depth(element)
+            
+            # rectangle
+            rect = self._safe_get_rectangle(element)
+            if rect:
+                info['rectangle'] = {
+                    'left': rect[0],
+                    'top': rect[1],
+                    'right': rect[2],
+                    'bottom': rect[3],
+                    'width': rect[2] - rect[0],
+                    'height': rect[3] - rect[1]
+                }
+            else:
+                info['rectangle'] = None
+            
+            # is_visible
+            if hasattr(element, 'is_visible'):
+                try:
+                    info['is_visible'] = element.is_visible()
+                except:
+                    info['is_visible'] = None
+            
+            # ハンドル
+            if hasattr(element, 'handle'):
+                try:
+                    info['handle'] = element.handle
+                except:
+                    info['handle'] = None
+            
+            # process名
+            info['process_name'] = self._get_process_name_from_element(element)
+            
+        except Exception as e:
+            self.logger.debug(f"UIA要素情報取得エラー: {e}")
+            info['error'] = str(e)
+        
+        return info
+    
+    def _get_win32_element_info(self, element: Any, cursor_pos: tuple[int, int]) -> Dict[str, Any]:
+        """
+        Win32バックエンドで要素情報を取得します
+        
+        Args:
+            element: 対象要素（UIAバックエンドの要素）
+            cursor_pos: カーソル位置
+        
+        Returns:
+            Dict[str, Any]: Win32要素情報
+        """
+        info = {}
+        
+        try:
+            # Win32バックエンドで同じ位置の要素を取得
+            desktop_win32 = Desktop(backend='win32')
+            win32_element = desktop_win32.from_point(cursor_pos[0], cursor_pos[1])
+            
+            if not win32_element:
+                info['error'] = 'Win32要素が見つかりません'
+                return info
+            
+            # window_text / name
+            if hasattr(win32_element, 'window_text'):
+                try:
+                    info['window_text'] = win32_element.window_text()
+                except:
+                    info['window_text'] = None
+            
+            # control_type (Win32では通常利用不可)
+            info['control_type'] = None
+            
+            # automation_id (Win32では通常利用不可)
+            info['automation_id'] = None
+            
+            # class_name
+            if hasattr(win32_element, 'class_name'):
+                try:
+                    info['class_name'] = win32_element.class_name()
+                except:
+                    info['class_name'] = None
+            
+            # friendly_class_name (Win32では通常利用不可)
+            info['friendly_class_name'] = None
+            
+            # children_count
+            try:
+                children = win32_element.children()
+                info['children_count'] = len(children) if children else 0
+            except:
+                info['children_count'] = None
+            
+            # depth (階層の深さ)
+            info['depth'] = self._calculate_element_depth(win32_element)
+            
+            # rectangle
+            try:
+                rect = win32_element.rectangle()
+                if rect:
+                    info['rectangle'] = {
+                        'left': rect.left,
+                        'top': rect.top,
+                        'right': rect.right,
+                        'bottom': rect.bottom,
+                        'width': rect.width(),
+                        'height': rect.height()
+                    }
+                else:
+                    info['rectangle'] = None
+            except:
+                info['rectangle'] = None
+            
+            # is_visible
+            if hasattr(win32_element, 'is_visible'):
+                try:
+                    info['is_visible'] = win32_element.is_visible()
+                except:
+                    info['is_visible'] = None
+            
+            # ハンドル
+            if hasattr(win32_element, 'handle'):
+                try:
+                    info['handle'] = win32_element.handle
+                except:
+                    info['handle'] = None
+            
+            # process名
+            info['process_name'] = self._get_process_name_from_element(win32_element)
+            
+        except Exception as e:
+            self.logger.debug(f"Win32要素情報取得エラー: {e}")
+            info['error'] = str(e)
+        
+        return info
+    
+    def _calculate_element_depth(self, element: Any) -> Optional[int]:
+        """
+        要素の階層の深さを計算します（ルートから）
+        
+        Args:
+            element: 対象要素
+        
+        Returns:
+            Optional[int]: 深度、計算できない場合はNone
+        """
+        try:
+            depth = 0
+            current = element
+            
+            # 最大20階層まで（無限ループ防止）
+            for _ in range(20):
+                try:
+                    parent = current.parent()
+                    if parent is None or parent == current:
+                        break
+                    depth += 1
+                    current = parent
+                except:
+                    break
+            
+            return depth
+        except:
+            return None
+    
+    def _get_process_name_from_element(self, element: Any) -> Optional[str]:
+        """
+        要素からプロセス名を取得します
+        
+        Args:
+            element: 対象要素
+        
+        Returns:
+            Optional[str]: プロセス名、取得できない場合はNone
+        """
+        try:
+            # ハンドルからプロセスIDを取得
+            if hasattr(element, 'handle'):
+                handle = element.handle
+                
+                if _WIN32GUI_AVAILABLE:
+                    try:
+                        _, pid = win32process.GetWindowThreadProcessId(handle)
+                        process = psutil.Process(pid)
+                        return process.name()
+                    except:
+                        pass
+            
+            # process_idメソッドを試行
+            if hasattr(element, 'process_id'):
+                try:
+                    pid = element.process_id()
+                    process = psutil.Process(pid)
+                    return process.name()
+                except:
+                    pass
+            
+            return None
+        except:
+            return None
 
 
 def create_cursor_handler(backend: str = 'win32') -> CursorHandler:

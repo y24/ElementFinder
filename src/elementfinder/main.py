@@ -8,6 +8,12 @@ import sys
 import traceback
 from typing import Dict, Any, Optional
 
+try:
+    import win32gui
+    _WIN32GUI_AVAILABLE = True
+except ImportError:
+    _WIN32GUI_AVAILABLE = False
+
 from .cli.parser import parse_command_line
 from .core.window_finder import create_window_finder
 from .core.element_finder import create_element_finder
@@ -25,6 +31,7 @@ class ElementFinderApp:
     def __init__(self):
         self.logger = None
         self.args = None
+        self._cursor_element = None  # カーソル要素を保持
     
     def run(self, args: Optional[list] = None) -> int:
         """
@@ -121,17 +128,20 @@ class ElementFinderApp:
             max_items=self.args['max_items']
         )
         
-
+        # 4. カーソル要素の詳細情報取得（--cursorモード時）
+        cursor_detailed_info = None
+        if self.args['cursor'] and hasattr(self, '_cursor_element') and self._cursor_element:
+            self.logger.info("ステップ4: カーソル要素の詳細情報取得")
+            cursor_detailed_info = self._get_cursor_detailed_info(self._cursor_element)
         
         # 5. 出力
-        self.logger.info("ステップ5: 出力生成")
-        self._output_results(elements)
+        self.logger.info("ステップ5: 出力生成\n")
+        self._output_results(elements, cursor_detailed_info)
         
         # 6. クリーンアップ
         if not self.args['cursor']:
             window_finder.close()
-        
-        self.logger.info(f"ElementFinder 完了: {len(elements)}件出力")
+
         return 0
     
     def _resolve_anchor(self, window) -> Any:
@@ -179,6 +189,9 @@ class ElementFinderApp:
             )
             
             self.logger.info(f"カーソル位置の要素を取得: {type(element).__name__}")
+            
+            # カーソル要素を保持（詳細情報取得用）
+            self._cursor_element = element
             
             # --parentオプションが指定されている場合
             if self.args.get('parent', False):
@@ -251,14 +264,52 @@ class ElementFinderApp:
             self.logger.error(f"アンカー解決失敗: {e}")
             raise
     
-    def _output_results(self, elements) -> None:
+    def _get_cursor_detailed_info(self, cursor_element: Any) -> Optional[Dict[str, Any]]:
+        """
+        カーソル要素の詳細情報を取得します
+        
+        Args:
+            cursor_element: カーソル要素
+        
+        Returns:
+            Optional[Dict[str, Any]]: 詳細情報、取得できない場合はNone
+        """
+        try:
+            cursor_handler = create_cursor_handler(self.args['backend'])
+            
+            # カーソル位置を取得
+            if _WIN32GUI_AVAILABLE:
+                cursor_pos = win32gui.GetCursorPos()
+            else:
+                # フォールバック: 要素の矩形の中心を使用
+                try:
+                    rect = cursor_element.rectangle()
+                    cursor_pos = (
+                        (rect.left + rect.right) // 2,
+                        (rect.top + rect.bottom) // 2
+                    )
+                except:
+                    cursor_pos = (0, 0)
+            
+            # 詳細情報を取得
+            detailed_info = cursor_handler.get_element_detailed_info(cursor_element, cursor_pos)
+            return detailed_info
+            
+        except Exception as e:
+            self.logger.warning(f"カーソル詳細情報取得失敗: {e}")
+            return None
+    
+    def _output_results(self, elements, cursor_detailed_info: Optional[Dict[str, Any]] = None) -> None:
         """
         結果を出力します
         
         Args:
             elements: 要素リスト
+            cursor_detailed_info: カーソル要素の詳細情報（--cursorモード時）
         """
         try:
+
+            
             if self.args['json']:
                 # JSON出力
                 formatter = create_formatter('json', fields=self.args['fields'])
@@ -284,10 +335,125 @@ class ElementFinderApp:
                 # エンコーディングエラーが発生した場合、問題のある文字を置換
                 safe_output = output.encode('utf-8', errors='replace').decode('utf-8')
                 print(safe_output)
+
+            # カーソル詳細情報を後に出力（--cursorモード時）
+            if cursor_detailed_info:
+                print()  # 空行を追加
+                self._output_cursor_detailed_info(cursor_detailed_info)
             
         except Exception as e:
             self.logger.error(f"出力生成失敗: {e}")
             raise
+    
+    def _output_cursor_detailed_info(self, detailed_info: Dict[str, Any]) -> None:
+        """
+        カーソル要素の詳細情報を出力します
+        
+        Args:
+            detailed_info: 詳細情報の辞書
+        """
+        try:
+            # UIAバックエンドの情報
+            print("\033[36m[UIA Backend]\033[0m")
+            uia_info = detailed_info.get('uia', {})
+            if 'error' in uia_info:
+                print(f"  Error: {uia_info['error']}")
+            else:
+                self._print_element_info_section(uia_info)
+            
+            print()
+            
+            # Win32バックエンドの情報
+            print("\033[36m[Win32 Backend]\033[0m")
+            win32_info = detailed_info.get('win32', {})
+            if 'error' in win32_info:
+                print(f"  Error: {win32_info['error']}")
+            else:
+                self._print_element_info_section(win32_info)
+            
+            print()
+            
+        except Exception as e:
+            self.logger.error(f"カーソル詳細情報出力失敗: {e}")
+    
+    def _print_element_info_section(self, info: Dict[str, Any]) -> None:
+        """
+        要素情報セクションを出力します
+        
+        Args:
+            info: 要素情報の辞書
+        """
+        # window_text
+        window_text = info.get('window_text')
+        name = info.get('name')
+        if window_text or name:
+            if window_text and name and window_text != name:
+                print(f"  window_text: {window_text}")
+                print(f"  name: {name}")
+            elif window_text:
+                print(f"  window_text: {window_text}")
+            elif name:
+                print(f"  window_text: {name}")
+        else:
+            print(f"  window_text: (None)")
+        
+        # control_type
+        control_type = info.get('control_type')
+        print(f"  control_type: {control_type if control_type else '(None)'}")
+        
+        # automation_id
+        automation_id = info.get('automation_id')
+        print(f"  automation_id: {automation_id if automation_id else '(None)'}")
+        
+        # class_name
+        class_name = info.get('class_name')
+        print(f"  class_name: {class_name if class_name else '(None)'}")
+        
+        # friendly_class_name
+        friendly_class_name = info.get('friendly_class_name')
+        if friendly_class_name:
+            print(f"  friendly_class_name: {friendly_class_name}")
+        
+        # children_count
+        children_count = info.get('children_count')
+        if children_count is not None:
+            print(f"  children_count: {children_count}")
+        else:
+            print(f"  children_count: (Unavailable)")
+        
+        # depth
+        depth = info.get('depth')
+        if depth is not None:
+            print(f"  depth: {depth}")
+        else:
+            print(f"  depth: (Unavailable)")
+        
+        # rectangle
+        rectangle = info.get('rectangle')
+        if rectangle:
+            print(f"  rectangle: L={rectangle.get('left')}, T={rectangle.get('top')}, "
+                  f"R={rectangle.get('right')}, B={rectangle.get('bottom')}, "
+                  f"W={rectangle.get('width')}, H={rectangle.get('height')}")
+        else:
+            print(f"  rectangle: (None)")
+        
+        # is_visible
+        is_visible = info.get('is_visible')
+        if is_visible is not None:
+            print(f"  is_visible: {is_visible}")
+        else:
+            print(f"  is_visible: (Unavailable)")
+        
+        # Handle
+        handle = info.get('handle')
+        if handle:
+            print(f"  Handle: 0x{handle:X}")
+        else:
+            print(f"  Handle: (None)")
+        
+        # Process Name
+        process_name = info.get('process_name')
+        print(f"  Process Name: {process_name if process_name else '(Unavailable)'}")
     
     def _format_pywinauto_native(self, formatter, elements) -> str:
         """

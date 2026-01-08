@@ -91,7 +91,7 @@ class ElementFinder:
         start_time = time.time()
         
         try:
-            self.logger.info(f"要素検索開始: depth={depth}, only_visible={only_visible}, "
+            self.logger.info(f"要素検索開始: backend={self.backend}, depth={depth}, only_visible={only_visible}, "
                            f"max_items={max_items}")
             
             # 要素を段階的に取得（アンカー自身も含む）
