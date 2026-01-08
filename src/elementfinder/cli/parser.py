@@ -143,7 +143,7 @@ class ElementFinderArgumentParser:
         cursor_group = parser.add_argument_group('カーソル指定', 'マウスカーソル位置をアンカーにするオプション')
         
         cursor_group.add_argument(
-            '--cursor',
+            '-c', '--cursor',
             action='store_true',
             help='マウスカーソル下の要素をアンカーとして使用'
         )
