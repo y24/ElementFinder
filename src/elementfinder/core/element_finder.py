@@ -197,12 +197,6 @@ class ElementFinder:
             for element in descendants:
                 element_count += 1
                 
-
-                
-
-                
-
-                
                 # プログレス表示（1000件を超える場合）
                 if element_count == 1000 and not progress:
                     progress = ProgressLogger("要素取得", 10000)  # 概算
@@ -690,8 +684,6 @@ class ElementFinder:
             return "、".join(conditions)
         else:
             return "全要素"
-    
-
 
 
 def create_element_finder(backend: str = 'win32') -> ElementFinder:
