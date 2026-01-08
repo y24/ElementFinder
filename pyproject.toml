@@ -1,10 +1,10 @@
 [project]
 name = "elementfinder"
 version = "0.1.0"
-dependencies = [
     "pywinauto>=0.6.8",
     "comtypes>=1.1.14",
     "pywin32>=306",
+    "psutil>=5.9.0",
 ]
 
 [project.scripts]
