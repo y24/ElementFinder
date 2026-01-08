@@ -160,7 +160,7 @@ class WindowFinder:
         if last_exception:
             self.logger.debug(f"最後の例外: {last_exception}")
         
-        raise WindowNotFoundError(window_title, timeout)
+        raise WindowNotFoundError(window_title)
     
     def _find_window_by_title(self, title: str) -> WindowSpecification:
         """
@@ -205,7 +205,7 @@ class WindowFinder:
             
         except re.error as e:
             raise WindowNotFoundError(
-                title_pattern, 0
+                title_pattern
             ) from e
     
     def _verify_window_exists(self, window: WindowSpecification) -> bool:

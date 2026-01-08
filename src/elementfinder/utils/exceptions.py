@@ -37,7 +37,7 @@ class WindowNotFoundError(ElementFinderError):
     """
     
     def __init__(self, window_title: str, timeout: int):
-        message = f"ウィンドウが見つかりません: '{window_title}' (タイムアウト: {timeout}秒)"
+        message = f"ウィンドウが見つかりません: '{window_title}'"
         super().__init__(message, exit_code=1)
         self.window_title = window_title
         self.timeout = timeout
@@ -126,7 +126,7 @@ class TimeoutError(ElementFinderError):
     """
     
     def __init__(self, operation: str, timeout: int):
-        message = f"操作タイムアウト: {operation} ({timeout}秒)"
+        message = f"操作タイムアウト: {operation}"
         super().__init__(message, exit_code=100)
         self.operation = operation
         self.timeout = timeout
