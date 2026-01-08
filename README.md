@@ -60,6 +60,8 @@ uiaf "アプリ名" --backend win32
 ```powershell
 # カーソル位置の要素をアンカーにして取得（ウィンドウタイトル不要）
 uiaf --cursor
+# または短縮形
+uiaf -c
 
 # カーソル取得までの遅延時間を指定
 uiaf --cursor --cursor-delay 3
@@ -146,7 +148,7 @@ uiaf "アプリ" --timeout 10
 
 ### カーソル指定
 
-- `--cursor` - マウスカーソル下の要素をアンカーとして使用
+- `-c, --cursor` - マウスカーソル下の要素をアンカーとして使用
 - `--cursor-delay SECONDS` - カーソル位置取得までの遅延時間（既定: 5）
 
 ### 出力制御
